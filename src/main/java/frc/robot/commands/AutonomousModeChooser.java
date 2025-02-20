@@ -48,7 +48,7 @@ public class AutonomousModeChooser {
                 {
                     Supplier<Command> supplier = () -> new InstantCommand( () -> driveToReef.setDriveToPoint( point )).
                             andThen( new InstantCommand( () -> driveToReef.setDriveToPointModifier( modifier ) ) ).
-                            andThen( driveToReef.getCommand() );
+                            andThen( driveToReef.getAutonomousCommand() );
 
                     chooser.addOption( "Drive to " + point.name() + " - " + modifier.name(),  supplier);
                 }

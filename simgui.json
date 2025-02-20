@@ -63,6 +63,7 @@
       "/SmartDashboard/2340-Auto-Drive Point": "String Chooser",
       "/SmartDashboard/2340-Auto-Drive Point Modifier": "String Chooser",
       "/SmartDashboard/2340-AutoDrive-VisionGoalPose": "Field2d",
+      "/SmartDashboard/ADXRS450_Gyro[0]": "Gyro",
       "/SmartDashboard/Alerts": "Alerts",
       "/SmartDashboard/Auto Action 1": "String Chooser",
       "/SmartDashboard/Auto Action 2": "String Chooser",
@@ -175,6 +176,12 @@
     }
   },
   "NetworkTables Info": {
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "open": true
+    },
     "visible": true
   },
   "NetworkTables View": {

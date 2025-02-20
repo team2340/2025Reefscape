@@ -33,6 +33,8 @@ public class AutoDriving {
         LEFT, CENTER, RIGHT
     }
 
+    private Command driveToPoseCommand = null;
+
     public enum DriveToPoint {
         REEF_1(DrivePoints.RED_REEF_1, DrivePoints.BLUE_REEF_1),
         REEF_2(DrivePoints.RED_REEF_2, DrivePoints.BLUE_REEF_2),
@@ -219,6 +221,8 @@ public class AutoDriving {
         SmartDashboard.putData("2340-Auto-Drive Point", driveToPointDashboardChooser );
         SmartDashboard.putData("2340-Auto-Drive Point Modifier", driveToPointModifierDashboardChooser );
         SmartDashboard.putData("2340-AutoDrive-VisionGoalPose", field);
+
+        buildDriveToPoseCommand();
     }
 
     public void setDriveToPoint(DriveToPoint driveToPoint) {
@@ -270,11 +274,7 @@ public class AutoDriving {
                 
     }
 
-    /**
-     * Drive to the desired location.
-     * This uses PathPlanner and gets the robot roughly to the correct area
-     */
-    private Command getDriveToPoseCommand()
+    private void buildDriveToPoseCommand()
     {
         Map<String, Command> entryMap = new HashMap<>();
         for( DrivePoints point : DrivePoints.values() )
@@ -284,7 +284,34 @@ public class AutoDriving {
             entryMap.put( point.name() + DrivePointModifier.RIGHT.name(), swerve.driveToPose( point.getPoint( DrivePointModifier.RIGHT ) ) );
         }
 
-        return new SelectCommand<>( entryMap, () -> currentDrivePoint.name() + currentDrivePointModifier.name() );
+        driveToPoseCommand = new SelectCommand<>( entryMap, () -> currentDrivePoint.name() + currentDrivePointModifier.name() );
+    }
+    /**
+     * Drive to the desired location.
+     * This uses PathPlanner and gets the robot roughly to the correct area
+     */
+    private Command getDriveToPoseCommand()
+    {
+        return driveToPoseCommand;
+    }
+
+    public Command getAutonomousCommand()
+    {
+        Map<String, Command> entryMap = new HashMap<>();
+        for( DrivePoints point : DrivePoints.values() )
+        {
+            entryMap.put( point.name() + DrivePointModifier.LEFT.name(), swerve.driveToPose( point.getPoint( DrivePointModifier.LEFT ) ) );
+            entryMap.put( point.name() + DrivePointModifier.CENTER.name(), swerve.driveToPose( point.getPoint( DrivePointModifier.CENTER ) ) );
+            entryMap.put( point.name() + DrivePointModifier.RIGHT.name(), swerve.driveToPose( point.getPoint( DrivePointModifier.RIGHT ) ) );
+        }
+
+        return new SelectCommand<>( entryMap, () -> currentDrivePoint.name() + currentDrivePointModifier.name() ).until( () -> {
+                    Pose2d currentPose = swerve.getPose();
+                    Pose2d targetPose = currentDrivePoint.getPoint( currentDrivePointModifier );
+                    double distance = currentPose.getTranslation().getDistance( targetPose.getTranslation() );
+                    return distance < AutoDrivingConstants.PATHPLANNER_TO_PRECISE_DRIVE_DISTANCE_THRESHOLD;
+                } )
+                .andThen( getDrivePreciseCommand() );
     }
 
     /**
@@ -295,6 +322,7 @@ public class AutoDriving {
     public Command getDrivePreciseCommand()
     {
         return Commands.runOnce( () -> {
+            System.out.println("Starting drive precise");
             // Sets the PID controller's current robot position initially
             Pose2d robotPose = swerve.getPose();
             xController.reset( robotPose.getX() );

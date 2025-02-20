@@ -6,7 +6,11 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
+import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
@@ -24,6 +28,8 @@ import frc.robot.subsystems.ElevatorAndPivotSubsystem;
 import frc.robot.subsystems.swervedrive.AprilTagPoseProcessing;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicReference;
+
 import swervelib.SwerveInputStream;
 
 /**
@@ -40,7 +46,7 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   private final AutoDriving driveToReef = new AutoDriving( drivebase );
-  //private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
+  private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
   private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef);
   private final ElevatorAndPivotSubsystem elevatorSubsystem = new ElevatorAndPivotSubsystem();
   private final CoralAlgaeDevice coralAlgaeDevice = new CoralAlgaeDevice();
@@ -82,7 +88,7 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveWithSetpointGeneratorFieldRelative(driveAngularVelocity);
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-    driverXbox.a().whileTrue( driveToReef.getDrivePreciseCommand().andThen(new PrintCommand("Done!")) );
+    driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
     driverXbox.x()
             .onTrue( new InstantCommand( elevatorSubsystem::setElevatorToQueuedPosition))
             .onFalse(new InstantCommand( elevatorSubsystem::stopElevator));
@@ -112,6 +118,32 @@ public class RobotContainer
     streamDeck.button( 9 )
             .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE)));
 
+    streamDeck.button( 20 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_1 )) );
+    streamDeck.button( 21 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_2 )) );
+    streamDeck.button( 18 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_3 )) );
+    streamDeck.button( 17 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_4 )) );
+    streamDeck.button( 16 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_5 )) );
+    streamDeck.button( 19 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_6 )) );
+    streamDeck.button( 15 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.PROCESSOR )) );
+    streamDeck.button( 22 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.CORAL_STATION_LEFT )) );
+    streamDeck.button( 23 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.CORAL_STATION_RIGHT )) );
+
+    streamDeck.button( 24 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPointModifier( AutoDriving.DrivePointModifier.LEFT )) );
+    streamDeck.button( 25 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPointModifier( AutoDriving.DrivePointModifier.CENTER )) );
+    streamDeck.button( 26 )
+            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPointModifier( AutoDriving.DrivePointModifier.RIGHT )) );
+
     streamDeck2.button( 1 )
             .onTrue(new InstantCommand( elevatorSubsystem::pivotOut ))
             .onFalse(new InstantCommand( elevatorSubsystem::stopPivot ));
@@ -134,6 +166,7 @@ public class RobotContainer
     streamDeck.button(13)
             .onTrue(new InstantCommand( coralAlgaeDevice::runCoralDeploy))
             .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+
     // Debug for buttons
     for( int i = 1; i < 32; i++)
     {

@@ -125,7 +125,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
 
     }
 
-    private void moveElevatorToDesiredPosition( long position ) {
+    private void moveElevatorToDesiredPosition() {
 
         double pidControllerValue = MathUtil.clamp(elevatorPIDController.calculate( getCurrentElevatorEncoderPosition()), -12, 12);
         elevatorSparkMax.setVoltage( pidControllerValue + elevatorFeedforward.calculate( elevatorSparkMax.getEncoder().getVelocity()));
@@ -191,7 +191,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
                    // movePivotToDesiredAngle( ElevatorAndPivotConstants.MINIMUM_PIVOT_ANGLE_FOR_ELEVATOR_MOVEMENT );
                    // return;
                 }
-                moveElevatorToDesiredPosition( desiredElevatorPosition.getEncoderPosition() );
+                moveElevatorToDesiredPosition();
             } else {
 
                 // Move the pivot motor if it's position is not currently in the right position, and the current desired
