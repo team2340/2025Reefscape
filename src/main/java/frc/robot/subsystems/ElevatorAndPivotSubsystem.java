@@ -10,14 +10,16 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ElevatorAndPivotConstants;
 
 public class ElevatorAndPivotSubsystem extends SubsystemBase {
     private DigitalInput bottomLimitSwitch = new DigitalInput(0);
-    private ElevatorPositions queuedElevatorPosition = null;
-    private PivotAngles queuedPivotAngle = null;
+    private DutyCycleEncoder pivotEncoder = new DutyCycleEncoder(1);
+    private ElevatorPositions queuedElevatorPosition = ElevatorPositions.INTAKE;
+    private PivotAngles queuedPivotAngle = PivotAngles.STOWED;
 
     private ElevatorPositions desiredElevatorPosition = null;
     private PivotAngles desiredPivotAngle = null;
@@ -96,7 +98,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
     ProfiledPIDController pivotPIDController = new ProfiledPIDController(
             ElevatorAndPivotConstants.PIVOT_kP,
             ElevatorAndPivotConstants.PIVOT_kI,
-            ElevatorAndPivotConstants.PIVOT_kP,
+            ElevatorAndPivotConstants.PIVOT_kD,
             new TrapezoidProfile.Constraints( ElevatorAndPivotConstants.PIVOT_MAX_SPEED, ElevatorAndPivotConstants.PIVOT_MAX_ACCEL )
     );
 
@@ -113,20 +115,19 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
 
 
     }
-    private double getCurrentElevatorEncoderPosition() {
+    public double getCurrentElevatorEncoderPosition() {
         return elevatorSparkMax.getEncoder().getPosition();
     }
 
-    private long getCurrentPivotEncoderPosition() {
-        return 0;
+    private double getCurrentPivotEncoderPosition() {
+        return pivotEncoder.get();
     }
 
-    private void movePivotToDesiredAngle(double position) {
+    private void movePivotToDesiredAngle() {
 
     }
 
     private void moveElevatorToDesiredPosition() {
-
         double pidControllerValue = MathUtil.clamp(elevatorPIDController.calculate( getCurrentElevatorEncoderPosition()), -12, 12);
         elevatorSparkMax.setVoltage( pidControllerValue + elevatorFeedforward.calculate( elevatorSparkMax.getEncoder().getVelocity()));
     }
@@ -137,34 +138,40 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         elevatorSparkMax.set( 0.2 );
     }
 
-    public void stopJobElevatorUp()
-    {
-        elevatorSparkMax.set( 0.0 );
-
-    }
-
     public void startJogElevatorDown()
     {
         desiredElevatorPosition = null;
         elevatorSparkMax.set( -0.2 );
-
     }
 
-    public void stopJobElevatorDown()
-    {
-        elevatorSparkMax.set( -0.0 );
-    }
 
     public void setQueuedElevatorPosition(ElevatorPositions elevatorPosition)
     {
         queuedElevatorPosition = elevatorPosition;
     }
+
+    public ElevatorPositions getCurrentDesiredElevatorPosition()
+    {
+        return desiredElevatorPosition;
+    }
+
     public void setElevatorToQueuedPosition()
     {
         desiredElevatorPosition = queuedElevatorPosition;
         desiredPivotAngle = queuedPivotAngle;
-        elevatorPIDController.setGoal( desiredElevatorPosition.getEncoderPosition());
+        setElevatorPIDControllerSetpoint( desiredElevatorPosition.getEncoderPosition() );
+
+    }
+
+    public void setElevatorPIDControllerSetpoint( double position )
+    {
+        elevatorPIDController.setGoal( position );
         elevatorPIDController.reset( getCurrentElevatorEncoderPosition() );
+    }
+
+    public boolean isElevatorAtSetpoint()
+    {
+        return elevatorPIDController.atSetpoint();
     }
 
     public void stopElevator()
@@ -177,11 +184,17 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         // If the elevator is not where it wants to be, check the pivot angle to make sure it is safe before moving.
         // If the pivot angle is not safe before moving, then move the pivot motor first before moving the elevator.
         // Once the pivot is finished moving to the safe position, then move the elevator
-        SmartDashboard.putNumber("Current Elevator Encoder", getCurrentElevatorEncoderPosition());
+        SmartDashboard.putNumber( "ElevatorAndPivot/CurrentElevatorEncoder", getCurrentElevatorEncoderPosition() );
+        SmartDashboard.putNumber( "ElevatorAndPivot/DesiredElevatorEncoder", elevatorPIDController.getSetpoint().position );
+        SmartDashboard.putBoolean( "ElevatorAndPivot/ElevatorAtSetpoint", elevatorPIDController.atSetpoint() );
+
+        SmartDashboard.putNumber( "ElevatorAndPivot/CurrentPivotEncoder", getCurrentPivotEncoderPosition() );
+        SmartDashboard.putNumber( "ElevatorAndPivot/DesiredPivotEncoder", pivotPIDController.getSetpoint().position );
+        SmartDashboard.putBoolean( "ElevatorAndPivot/PivotAtSetpoint", pivotPIDController.atSetpoint() );
+
         if( !bottomLimitSwitch.get() )
         {
             elevatorSparkMax.getEncoder().setPosition(0);
-            //elevatorSparkMax.set(0);
         }
 
         if( desiredElevatorPosition != null )
@@ -197,7 +210,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
                 // Move the pivot motor if it's position is not currently in the right position, and the current desired
                 // pivot angle is not smaller than the position's minimum pivot angle
                 if( desiredPivotAngle.getEncoderPosition() >= desiredElevatorPosition.getMinimumPivotEncoder() ) {
-                    movePivotToDesiredAngle( desiredPivotAngle.getEncoderPosition() );
+                    movePivotToDesiredAngle();
                 }
             }
         }

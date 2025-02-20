@@ -56,7 +56,7 @@ public class AutoDriving {
             this.bluePoint = bluePoint;
         }
     }
-    private enum DrivePoints{
+    public enum DrivePoints{
         RED_REEF_1(
                 //new Pose2d( 14.82, 4.01, Rotation2d.fromDegrees( 180.00 ) ),
                 new Pose2d( 15.65, 4.01, Rotation2d.fromDegrees( 180.00 ) ),
@@ -422,5 +422,15 @@ public class AutoDriving {
                 }
 
             }
+    }
+
+    public DrivePoints getCurrentDriveToPoint()
+    {
+        return currentDrivePoint;
+    }
+
+    public DrivePointModifier getCurrentDrivePointModifier()
+    {
+        return currentDrivePointModifier;
     }
 }

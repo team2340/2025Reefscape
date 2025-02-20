@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AutonomousModeChooser;
+import frc.robot.commands.*;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.commands.swervedrive.AutoDriving;
 import frc.robot.subsystems.CoralAlgaeDevice;
@@ -50,6 +50,7 @@ public class RobotContainer
   private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef);
   private final ElevatorAndPivotSubsystem elevatorSubsystem = new ElevatorAndPivotSubsystem();
   private final CoralAlgaeDevice coralAlgaeDevice = new CoralAlgaeDevice();
+  private final RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic = new RunCoralAlgaeDeviceAutomatic(driveToReef, elevatorSubsystem);
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
    */
@@ -89,9 +90,9 @@ public class RobotContainer
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
     driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
-    driverXbox.x()
-            .onTrue( new InstantCommand( elevatorSubsystem::setElevatorToQueuedPosition))
-            .onFalse(new InstantCommand( elevatorSubsystem::stopElevator));
+    driverXbox.b().whileTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
+    //TODO: Change this to MovePivotAndElevatorToPosition
+    driverXbox.x().whileTrue( new RunElevatorToPosition( elevatorSubsystem ) );
 
     configureStreamDeckBindings();
   }
@@ -99,13 +100,8 @@ public class RobotContainer
   private void configureStreamDeckBindings()
   {
 
-    streamDeck.button( 31 )
-            .onTrue( new InstantCommand(elevatorSubsystem::startJogElevatorUp, elevatorSubsystem))
-            .onFalse(new InstantCommand(elevatorSubsystem::stopJobElevatorUp, elevatorSubsystem));
-
-    streamDeck.button( 32 )
-            .onTrue( new InstantCommand(elevatorSubsystem::startJogElevatorDown, elevatorSubsystem))
-            .onFalse(new InstantCommand(elevatorSubsystem::stopJobElevatorDown, elevatorSubsystem));
+    streamDeck.button( 31 ).whileTrue( new JogElevatorUp( elevatorSubsystem ) );
+    streamDeck.button( 32 ).whileTrue( new JogElevatorDown( elevatorSubsystem ) );
 
     streamDeck.button( 5 )
             .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L1)));
