@@ -1,6 +1,10 @@
 package frc.robot.constants;
 
 public class ElevatorAndPivotConstants {
+    public final static int ELEVATOR_CAN_ID = 9;
+    public final static int ELEVATOR_FOLLOWER_CAN_ID = 10;
+    public final static int PIVOT_CAN_ID = 11;
+
     public static final double MINIMUM_PIVOT_ANGLE_FOR_ELEVATOR_MOVEMENT = 5.0;
 
     public static final double ELEVATOR_MAX_SPEED = 100;

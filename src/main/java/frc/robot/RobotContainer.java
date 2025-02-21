@@ -6,29 +6,27 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
-import com.pathplanner.lib.commands.PathfindingCommand;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
-import frc.robot.constants.Constants.OperatorConstants;
+import frc.robot.commands.coralalgae.RunCoralAlgaeDeviceAutomatic;
+import frc.robot.commands.elevatorandpivotcommands.MovePivotAndElevatorToPosition;
+import frc.robot.commands.elevatorandpivotcommands.SetPivotAngleAutomatically;
+import frc.robot.commands.manualjogcommands.JogElevatorDown;
+import frc.robot.commands.manualjogcommands.JogElevatorUp;
+import frc.robot.commands.manualjogcommands.JogPivotIn;
+import frc.robot.commands.manualjogcommands.JogPivotOut;
 import frc.robot.commands.swervedrive.AutoDriving;
 import frc.robot.subsystems.CoralAlgaeDevice;
 import frc.robot.subsystems.ElevatorAndPivotSubsystem;
 import frc.robot.subsystems.swervedrive.AprilTagPoseProcessing;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicReference;
 
 import swervelib.SwerveInputStream;
 
@@ -46,11 +44,13 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   private final AutoDriving driveToReef = new AutoDriving( drivebase );
-  private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
   private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef);
   private final ElevatorAndPivotSubsystem elevatorSubsystem = new ElevatorAndPivotSubsystem();
   private final CoralAlgaeDevice coralAlgaeDevice = new CoralAlgaeDevice();
   private final RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic = new RunCoralAlgaeDeviceAutomatic(driveToReef, elevatorSubsystem);
+
+  private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
+  private final SetPivotAngleAutomatically setPivotAngleAutomatically = new SetPivotAngleAutomatically( driveToReef, elevatorSubsystem );
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
    */
@@ -91,18 +91,18 @@ public class RobotContainer
 
     driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
     driverXbox.b().whileTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
-    //TODO: Change this to MovePivotAndElevatorToPosition
-    driverXbox.x().whileTrue( new RunElevatorToPosition( elevatorSubsystem ) );
+    driverXbox.x().whileTrue( MovePivotAndElevatorToPosition.getCommand( elevatorSubsystem ) );
+    driverXbox.y().whileTrue(
+            new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE ))
+            .andThen( new InstantCommand( () -> elevatorSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.STOWED )) )
+            .andThen( MovePivotAndElevatorToPosition.getCommand( elevatorSubsystem ) )
+    );
 
     configureStreamDeckBindings();
   }
 
   private void configureStreamDeckBindings()
   {
-
-    streamDeck.button( 31 ).whileTrue( new JogElevatorUp( elevatorSubsystem ) );
-    streamDeck.button( 32 ).whileTrue( new JogElevatorDown( elevatorSubsystem ) );
-
     streamDeck.button( 5 )
             .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L1)));
     streamDeck.button( 6 )
@@ -140,18 +140,38 @@ public class RobotContainer
     streamDeck.button( 26 )
             .onTrue( new InstantCommand( () -> driveToReef.setDriveToPointModifier( AutoDriving.DrivePointModifier.RIGHT )) );
 
-    streamDeck2.button( 1 )
-            .onTrue(new InstantCommand( elevatorSubsystem::pivotOut ))
-            .onFalse(new InstantCommand( elevatorSubsystem::stopPivot ));
+    // Auto drive elevator settings. This will also determine what angle the pivot needs to be
+    streamDeck.button( 27 )
+            .onTrue( new InstantCommand( () -> {
+              elevatorSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.L1 );
+              setPivotAngleAutomatically.calculatePivotAngleAndQueue();
+            }) );
+    streamDeck.button( 28 )
+            .onTrue( new InstantCommand( () -> {
+              elevatorSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.L2 );
+              setPivotAngleAutomatically.calculatePivotAngleAndQueue();
+            }) );
+    streamDeck.button( 29 )
+            .onTrue( new InstantCommand( () -> {
+              elevatorSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.L3 );
+              setPivotAngleAutomatically.calculatePivotAngleAndQueue();
+            }) );
+    streamDeck.button( 30 )
+            .onTrue( new InstantCommand( () -> {
+              elevatorSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.L4 );
+              setPivotAngleAutomatically.calculatePivotAngleAndQueue();
+            }) );
 
-
-    streamDeck2.button( 2 )
-            .onTrue(new InstantCommand( elevatorSubsystem::pivotIn ))
-            .onFalse(new InstantCommand( elevatorSubsystem::stopPivot ));
+    // Manual Jog Menu Actions
+    streamDeck2.button( 1 ).whileTrue( new JogPivotOut( elevatorSubsystem ) );
+    streamDeck2.button( 2 ).whileTrue( new JogPivotIn( elevatorSubsystem ) );
+    streamDeck.button( 31 ).whileTrue( new JogElevatorUp( elevatorSubsystem ) );
+    streamDeck.button( 32 ).whileTrue( new JogElevatorDown( elevatorSubsystem ) );
 
     streamDeck.button(7)
             .onTrue(new InstantCommand( coralAlgaeDevice::runAlgaeIntake))
             .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+
     streamDeck.button(8)
             .onTrue(new InstantCommand( coralAlgaeDevice::runAlgaeDeploy))
             .onFalse(new InstantCommand( coralAlgaeDevice::stop));
@@ -159,9 +179,12 @@ public class RobotContainer
     streamDeck.button(12)
             .onTrue(new InstantCommand( coralAlgaeDevice::runCoralIntake))
             .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+
     streamDeck.button(13)
             .onTrue(new InstantCommand( coralAlgaeDevice::runCoralDeploy))
             .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+
+
 
     // Debug for buttons
     for( int i = 1; i < 32; i++)
@@ -181,9 +204,6 @@ public class RobotContainer
    */
   public Command getAutonomousCommand()
   {
-    // An example command will be run in autonomous
-    //return drivebase.getAutonomousCommand("New Auto");
-    System.out.println("Getting auto command");
     return autonomousModeChooser.getAutonomousCommand();
   }
 

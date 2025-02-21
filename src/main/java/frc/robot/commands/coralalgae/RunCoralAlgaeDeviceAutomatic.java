@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.coralalgae;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -33,7 +33,6 @@ public class RunCoralAlgaeDeviceAutomatic {
     {
         AutoDriving.DrivePoints drivePoint = driveToReef.getCurrentDriveToPoint();
         AutoDriving.DrivePointModifier drivePointModifier = driveToReef.getCurrentDrivePointModifier();
-        ElevatorAndPivotSubsystem.ElevatorPositions elevatorPosition = elevatorAndPivotSubsystem.getCurrentDesiredElevatorPosition();
 
         switch( drivePoint )
         {

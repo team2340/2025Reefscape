@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.elevatorandpivotcommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElevatorAndPivotSubsystem;
@@ -10,8 +10,8 @@ import frc.robot.subsystems.ElevatorAndPivotSubsystem;
 public class MovePivotAndElevatorToPosition {
     public static Command getCommand( ElevatorAndPivotSubsystem elevatorAndPivotSubsystem )
     {
-        return new MovePivotToSafePosition()
+        return new MovePivotToSafePosition( elevatorAndPivotSubsystem )
                 .andThen( new RunElevatorToPosition( elevatorAndPivotSubsystem ) )
-                .andThen( new MovePivotToDesiredPosition() );
+                .andThen( new MovePivotToDesiredPosition( elevatorAndPivotSubsystem ) );
     }
 }
