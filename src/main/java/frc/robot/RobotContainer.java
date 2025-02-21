@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
 import frc.robot.commands.coralalgae.RunCoralAlgaeDeviceAutomatic;
+import frc.robot.commands.elevatorandpivotcommands.BringElevatorBackDown;
 import frc.robot.commands.elevatorandpivotcommands.MovePivotAndElevatorToPosition;
 import frc.robot.commands.elevatorandpivotcommands.SetPivotAngleAutomatically;
 import frc.robot.commands.manualjogcommands.JogElevatorDown;
@@ -44,13 +45,14 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   private final AutoDriving driveToReef = new AutoDriving( drivebase );
-  private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef);
   private final ElevatorAndPivotSubsystem elevatorSubsystem = new ElevatorAndPivotSubsystem();
   private final CoralAlgaeDevice coralAlgaeDevice = new CoralAlgaeDevice();
   private final RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic = new RunCoralAlgaeDeviceAutomatic(driveToReef, elevatorSubsystem);
 
   private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
   private final SetPivotAngleAutomatically setPivotAngleAutomatically = new SetPivotAngleAutomatically( driveToReef, elevatorSubsystem );
+  private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef, elevatorSubsystem, setPivotAngleAutomatically, runCoralAlgaeDeviceAutomatic);
+
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
    */
@@ -91,12 +93,8 @@ public class RobotContainer
 
     driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
     driverXbox.b().whileTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
-    driverXbox.x().whileTrue( MovePivotAndElevatorToPosition.getCommand( elevatorSubsystem ) );
-    driverXbox.y().whileTrue(
-            new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE ))
-            .andThen( new InstantCommand( () -> elevatorSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.STOWED )) )
-            .andThen( MovePivotAndElevatorToPosition.getCommand( elevatorSubsystem ) )
-    );
+    driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ) );
+    driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ) );
 
     configureStreamDeckBindings();
   }
