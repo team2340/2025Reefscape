@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import frc.robot.commands.swervedrive.AutoDriving;
+import frc.robot.subsystems.CoralAlgaeDevice;
 import frc.robot.subsystems.ElevatorAndPivotSubsystem;
 
 import java.util.Map;
@@ -22,11 +23,13 @@ public class RunCoralAlgaeDeviceAutomatic {
 
     private AutoDriving driveToReef;
     private ElevatorAndPivotSubsystem elevatorAndPivotSubsystem;
+    private CoralAlgaeDevice coralAlgaeDevice;
 
-    public RunCoralAlgaeDeviceAutomatic( AutoDriving driveToReef, ElevatorAndPivotSubsystem elevatorAndPivotSubsystem )
+    public RunCoralAlgaeDeviceAutomatic(AutoDriving driveToReef, ElevatorAndPivotSubsystem elevatorAndPivotSubsystem, CoralAlgaeDevice coralAlgaeDevice)
     {
         this.driveToReef = driveToReef;
         this.elevatorAndPivotSubsystem = elevatorAndPivotSubsystem;
+        this.coralAlgaeDevice = coralAlgaeDevice;
     }
 
     private Mode selectCommand()
@@ -67,10 +70,10 @@ public class RunCoralAlgaeDeviceAutomatic {
     {
         return new SelectCommand<>(
                 Map.ofEntries(
-                        Map.entry( Mode.INTAKE_CORAL, new PrintCommand( "Intake Coral" ) ),
-                        Map.entry( Mode.DEPLOY_CORAL, new PrintCommand( "Deploy Coral" ) ),
-                        Map.entry( Mode.INTAKE_ALGAE, new PrintCommand( "Intake Algae" ) ),
-                        Map.entry( Mode.DEPLOY_ALGAE, new PrintCommand( "Deploy Algae" ) )
+                        Map.entry( Mode.INTAKE_CORAL, new PrintCommand( "Intake Coral" ).andThen( new IntakeCoral( coralAlgaeDevice )) ),
+                        Map.entry( Mode.DEPLOY_CORAL, new PrintCommand( "Deploy Coral" ).andThen( new DeployCoral( coralAlgaeDevice )) ),
+                        Map.entry( Mode.INTAKE_ALGAE, new PrintCommand( "Intake Algae" ).andThen( new IntakeAlgae( coralAlgaeDevice )) ),
+                        Map.entry( Mode.DEPLOY_ALGAE, new PrintCommand( "Deploy Algae" ).andThen( new DeployAlgae( coralAlgaeDevice )) )
                 ),
                 this::selectCommand
         );

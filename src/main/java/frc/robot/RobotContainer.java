@@ -14,9 +14,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
-import frc.robot.commands.coralalgae.RunCoralAlgaeDeviceAutomatic;
+import frc.robot.commands.coralalgae.*;
 import frc.robot.commands.elevatorandpivotcommands.BringElevatorBackDown;
 import frc.robot.commands.elevatorandpivotcommands.MovePivotAndElevatorToPosition;
+import frc.robot.commands.elevatorandpivotcommands.MovePivotToSafePosition;
 import frc.robot.commands.elevatorandpivotcommands.SetPivotAngleAutomatically;
 import frc.robot.commands.manualjogcommands.JogElevatorDown;
 import frc.robot.commands.manualjogcommands.JogElevatorUp;
@@ -47,7 +48,7 @@ public class RobotContainer
   private final AutoDriving driveToReef = new AutoDriving( drivebase );
   private final ElevatorAndPivotSubsystem elevatorSubsystem = new ElevatorAndPivotSubsystem();
   private final CoralAlgaeDevice coralAlgaeDevice = new CoralAlgaeDevice();
-  private final RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic = new RunCoralAlgaeDeviceAutomatic(driveToReef, elevatorSubsystem);
+  private final RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic = new RunCoralAlgaeDeviceAutomatic(driveToReef, elevatorSubsystem, coralAlgaeDevice);
 
   private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
   private final SetPivotAngleAutomatically setPivotAngleAutomatically = new SetPivotAngleAutomatically( driveToReef, elevatorSubsystem );
@@ -73,6 +74,7 @@ public class RobotContainer
     DriverStation.silenceJoystickConnectionWarning(false);
 
     elevatorSubsystem.setDefaultCommand( new RepeatCommand( new InstantCommand( elevatorSubsystem::run, elevatorSubsystem )));
+    coralAlgaeDevice.setDefaultCommand( new RepeatCommand( new InstantCommand( coralAlgaeDevice::run, coralAlgaeDevice )));
 
     NamedCommands.registerCommand("test", Commands.print("I EXIST"));
     NamedCommands.registerCommand( "SetReef_1", new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_1 )) );
@@ -92,7 +94,7 @@ public class RobotContainer
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
     driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
-    driverXbox.b().whileTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
+    driverXbox.b().onTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
     driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ) );
     driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ) );
 
@@ -166,22 +168,18 @@ public class RobotContainer
     streamDeck.button( 31 ).whileTrue( new JogElevatorUp( elevatorSubsystem ) );
     streamDeck.button( 32 ).whileTrue( new JogElevatorDown( elevatorSubsystem ) );
 
-    streamDeck.button(7)
-            .onTrue(new InstantCommand( coralAlgaeDevice::runAlgaeIntake))
-            .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+    streamDeck.button(7).onTrue(new IntakeAlgae(coralAlgaeDevice));
 
-    streamDeck.button(8)
-            .onTrue(new InstantCommand( coralAlgaeDevice::runAlgaeDeploy))
-            .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+    streamDeck.button(8).onTrue( new DeployAlgae( coralAlgaeDevice) );
 
-    streamDeck.button(12)
-            .onTrue(new InstantCommand( coralAlgaeDevice::runCoralIntake))
-            .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+    streamDeck.button(12).onTrue( new IntakeCoral( coralAlgaeDevice ) );
 
-    streamDeck.button(13)
-            .onTrue(new InstantCommand( coralAlgaeDevice::runCoralDeploy))
-            .onFalse(new InstantCommand( coralAlgaeDevice::stop));
+    streamDeck.button(13).onTrue( new DeployCoral( coralAlgaeDevice  ) );
 
+    streamDeck.button(1).onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.STOWED )));
+    streamDeck.button(2).onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.INTAKE_ALGAE )));
+    streamDeck.button(3).onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_CORAL )));
+    streamDeck.button(4).onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_ALGAE )));
 
 
     // Debug for buttons

@@ -19,6 +19,8 @@ public class MovePivotToSafePosition extends Command {
     @Override
     public void initialize() {
         elevatorAndPivotSubsystem.setPivotPIDControllerSetpoint( ElevatorAndPivotConstants.MINIMUM_PIVOT_ANGLE_FOR_ELEVATOR_MOVEMENT );
+        elevatorAndPivotSubsystem.run();
+
     }
 
     @Override

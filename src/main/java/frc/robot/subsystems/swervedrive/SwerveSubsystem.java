@@ -70,7 +70,7 @@ public class SwerveSubsystem extends SubsystemBase
   /**
    * Enable vision odometry updates while driving.
    */
-  private final boolean             visionDriveTest     = false;
+  private final boolean             visionDriveTest     = true;
   /**
    * PhotonVision class to keep an accurate odometry.
    */
@@ -143,6 +143,7 @@ public class SwerveSubsystem extends SubsystemBase
     // When vision is enabled we must manually update odometry in SwerveDrive
     if (visionDriveTest)
     {
+
       swerveDrive.updateOdometry();
       vision.updatePoseEstimation(swerveDrive);
     }
@@ -270,8 +271,8 @@ public class SwerveSubsystem extends SubsystemBase
   {
     // Create the constraints to use while pathfinding
     PathConstraints constraints = new PathConstraints(
-            swerveDrive.getMaximumChassisVelocity(), 4.0,
-            swerveDrive.getMaximumChassisAngularVelocity(), Units.degreesToRadians(720));
+            swerveDrive.getMaximumChassisVelocity() * 0.5, 4.0,
+            swerveDrive.getMaximumChassisAngularVelocity() * 0.5, Units.degreesToRadians(320));
 
     // Since AutoBuilder is configured, we can use it to build pathfinding commands
     return AutoBuilder.pathfindToPose(

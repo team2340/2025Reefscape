@@ -14,6 +14,7 @@ public class RunElevatorToPosition extends Command {
     @Override
     public void initialize() {
         elevatorAndPivotSubsystem.setElevatorToQueuedPosition();
+        elevatorAndPivotSubsystem.run();
     }
 
     @Override

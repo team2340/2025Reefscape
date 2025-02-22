@@ -12,9 +12,9 @@ public class AutoDrivingConstants {
     // The distance that the code will consider the robot at the precise location. This will cause the command to stop and then any other commands to run
     public static final double PRECISE_POSITION_THRESHOLD = 0.01;
 
-    public static final Transform2d TAG_TO_GOAL_CENTER = new Transform2d(new Translation2d(.55, 0), Rotation2d.fromDegrees(180.0));
-    public static final Transform2d TAG_TO_GOAL_LEFT = new Transform2d(new Translation2d(.55, -0.16), Rotation2d.fromDegrees(180.0));
-    public static final Transform2d TAG_TO_GOAL_RIGHT = new Transform2d(new Translation2d(.55, 0.16), Rotation2d.fromDegrees(180.0));
+    public static final Transform2d TAG_TO_GOAL_CENTER = new Transform2d(new Translation2d(.46, 0), Rotation2d.fromDegrees(180.0));
+    public static final Transform2d TAG_TO_GOAL_LEFT = new Transform2d(new Translation2d(.46, -0.16), Rotation2d.fromDegrees(180.0));
+    public static final Transform2d TAG_TO_GOAL_RIGHT = new Transform2d(new Translation2d(.46, 0.16), Rotation2d.fromDegrees(180.0));
 
 
     // PID Controller values for the precise drive to target

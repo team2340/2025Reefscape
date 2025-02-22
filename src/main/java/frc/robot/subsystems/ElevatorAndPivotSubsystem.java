@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SoftLimitConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
@@ -20,7 +21,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
     private DigitalInput bottomLimitSwitch = new DigitalInput(0);
     private DutyCycleEncoder pivotEncoder = new DutyCycleEncoder(1);
 
-    private ElevatorPositions queuedElevatorPosition = ElevatorPositions.INTAKE;
+    private ElevatorPositions queuedElevatorPosition = ElevatorPositions.L1;
     private ElevatorPositions desiredElevatorPosition = ElevatorPositions.INTAKE;
 
     private PivotAngles queuedPivotAngle = PivotAngles.STOWED;
@@ -41,11 +42,11 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
     }
 
     public enum ElevatorPositions {
-        INTAKE(10, 10),
-        L1(20, 10),
-        L2(62, 10),
-        L3(135, 10),
-        L4(225, 10);
+        INTAKE(0, 10),
+        L1(20 +5, 10),
+        L2(46 +15, 10),
+        L3(119 +15, 10),
+        L4(219, 10);
 
         private long encoderPosition;
         private long minimumPivotEncoder;
@@ -64,18 +65,18 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
     }
 
     public enum PivotAngles {
-        STOWED( 0 ),
-        DEPLOY_CORAL(5),
-        INTAKE_ALGAE(5),
-        DEPLOY_CORAL_L4(10),
-        DEPLOY_ALGAE(90);
+        STOWED( 0.4866 ),
+        DEPLOY_CORAL(.559),
+        INTAKE_ALGAE(.630),
+        DEPLOY_CORAL_L4(.535),
+        DEPLOY_ALGAE(.728);
 
-        private long encoderPosition;
-        PivotAngles(long encoderPosition) {
+        private double encoderPosition;
+        PivotAngles(double encoderPosition) {
             this.encoderPosition = encoderPosition;
         }
 
-        public long getEncoderPosition() {
+        public double getEncoderPosition() {
             return encoderPosition;
         }
     }
@@ -113,7 +114,14 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         config2.idleMode(SparkBaseConfig.IdleMode.kBrake);
         elevatorSparkMax.configure(config2, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
+
         elevatorPIDController.setGoal( 0 );
+        elevatorPIDController.reset(getCurrentElevatorEncoderPosition());
+
+        pivotPIDController.setGoal(PivotAngles.STOWED.getEncoderPosition());
+        pivotPIDController.reset(getCurrentPivotEncoderPosition());
+
+        pivotPIDController.setTolerance(0.005);
 
     }
     public double getCurrentElevatorEncoderPosition() {
@@ -126,7 +134,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
 
     private void movePivotToDesiredAngle() {
         double pidControllerValue = MathUtil.clamp(pivotPIDController.calculate( getCurrentPivotEncoderPosition() ), -12, 12);
-        elevatorSparkMax.setVoltage( pidControllerValue );
+        pivotSparkMax.setVoltage( -pidControllerValue );
     }
 
     private void moveElevatorToDesiredPosition() {
@@ -185,8 +193,8 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
 
     public void setPivotPIDControllerSetpoint( double position )
     {
-        pivotPIDController.setGoal( position );
         pivotPIDController.reset( getCurrentPivotEncoderPosition() );
+        pivotPIDController.setGoal( position );
     }
 
     public boolean isElevatorAtSetpoint()
@@ -216,20 +224,25 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         // If the bottom limit switch is hit, then reset the encoder to 0
         if( !bottomLimitSwitch.get() )
         {
-            elevatorSparkMax.getEncoder().setPosition(0);
+            elevatorSparkMax.getEncoder().setPosition(-5);
+            if( !homed )
+            {
+                stopElevator();
+            }
             homed = true;
         }
 
         if( !homed )
         {
-            startJogElevatorDown();
+            //startJogElevatorDown();
+            elevatorSparkMax.set( -0.05 );
         }
         else
         {
             moveElevatorToDesiredPosition();
-            movePivotToDesiredAngle();
         }
 
+        movePivotToDesiredAngle();
     }
 
 }

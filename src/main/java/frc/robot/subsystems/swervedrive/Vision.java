@@ -341,9 +341,9 @@ public class Vision
   {
     CENTER_CAM("Arducam_OV9281_USB_Camera (1)",
       new Rotation3d(0, Units.degreesToRadians(20), 0),
-      new Translation3d(Units.inchesToMeters(0),
+      new Translation3d(Units.inchesToMeters(.349),
                         Units.inchesToMeters(0),
-                        Units.inchesToMeters(0.25)),
+                        Units.inchesToMeters(0.225)),
       VecBuilder.fill(.1, .1, 8), VecBuilder.fill(1, 1, 1));
 
     /**
@@ -605,7 +605,7 @@ public class Vision
           // Increase std devs based on (average) distance
           if (numTags == 1 && avgDist > 4)
           {
-            estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+            estStdDevs = singleTagStdDevs;
           } else
           {
             estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
