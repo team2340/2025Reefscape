@@ -339,12 +339,18 @@ public class Vision
    */
   public enum Cameras
   {
-    CENTER_CAM("Arducam_OV9281_USB_Camera (1)",
-      new Rotation3d(0, Units.degreesToRadians(20), 0),
+    LEFT_CAM("Arducam_OV9281_USB_Camera (1)",
+      new Rotation3d(0, Units.degreesToRadians(20), Units.degreesToRadians(-30)),
       new Translation3d(Units.inchesToMeters(.349),
-                        Units.inchesToMeters(0),
+                        Units.inchesToMeters(.30),
                         Units.inchesToMeters(0.225)),
-      VecBuilder.fill(.1, .1, 8), VecBuilder.fill(1, 1, 1));
+      VecBuilder.fill(.1, .1, 8), VecBuilder.fill(1, 1, 1)),
+    RIGHT_CAM("Arducam_OV9281_USB_Camera",
+            new Rotation3d(0, Units.degreesToRadians(20), Units.degreesToRadians(30)),
+            new Translation3d(Units.inchesToMeters(.349),
+                    Units.inchesToMeters(0),
+                    Units.inchesToMeters(0.225)),
+            VecBuilder.fill(.1, .1, 8), VecBuilder.fill(1, 1, 1));
 
     /**
      * Latency alert to use when high latency is detected.
@@ -423,9 +429,9 @@ public class Vision
       {
         SimCameraProperties cameraProp = new SimCameraProperties();
         // A 640 x 480 camera with a 100 degree diagonal FOV.
-        cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(100));
+        cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(150));
         // Approximate detection noise with average and standard deviation error in pixels.
-        cameraProp.setCalibError(0.55, 0.3);
+        cameraProp.setCalibError(0.25, 0.08);
         // Set the camera image capture framerate (Note: this is limited by robot loop rate).
         cameraProp.setFPS(30);
         // The average and standard deviation in milliseconds of image data latency.
@@ -605,7 +611,7 @@ public class Vision
           // Increase std devs based on (average) distance
           if (numTags == 1 && avgDist > 4)
           {
-            estStdDevs = singleTagStdDevs;
+            estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);;
           } else
           {
             estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));

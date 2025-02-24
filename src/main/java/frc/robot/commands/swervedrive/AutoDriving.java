@@ -368,48 +368,57 @@ public class AutoDriving {
             {
                 Pose2d robotPose = swerve.getPose();
                 // Code from https://github.com/STMARobotics/frc-7028-2023/blob/301928718c80cc6db3c29a6bfad8b36483baf1b4/src/main/java/frc/robot/commands/ChaseTagCommand.java
-                Optional<PhotonPipelineResult> visionResults = Vision.Cameras.CENTER_CAM.getLatestResult();
-                if ( visionResults.isPresent() )
+                double bestAmbiguity = Double.MAX_VALUE;
+                for(Vision.Cameras camera : Vision.Cameras.values() )
                 {
-                    PhotonPipelineResult result = visionResults.get();
-                    Optional<PhotonTrackedTarget> targetOpt = result.getTargets().stream()
-                            .filter( t -> t.getFiducialId() == currentDrivePoint.getAprilTagId() )
-                            .findFirst();
-                        
-                    SmartDashboard.putBoolean("2340-AprilTag-Found", targetOpt.isPresent());
-                    if( targetOpt.isPresent() )
+                    Optional<PhotonPipelineResult> visionResults = camera.getLatestResult();
+                    if ( visionResults.isPresent() )
                     {
-                        PhotonTrackedTarget target = targetOpt.get();
-                        if( !target.equals( visionLastTarget ) )
+                        PhotonPipelineResult result = visionResults.get();
+                        Optional<PhotonTrackedTarget> targetOpt = result.getTargets().stream()
+                                .filter( t -> t.getFiducialId() == currentDrivePoint.getAprilTagId() )
+                                .findFirst();
+
+                        SmartDashboard.putBoolean("2340-AprilTag-Found", targetOpt.isPresent());
+                        if( targetOpt.isPresent() )
                         {
-                            visionLastTarget = target;
-
-                            var camToTarget = target.getBestCameraToTarget();
-                            var transform = new Transform2d(
-                                    camToTarget.getTranslation().toTranslation2d(),
-                                    camToTarget.getRotation().toRotation2d()
-                            );
-
-                            Transform2d CAMERA_TO_ROBOT = new Transform2d(
-                                    new Translation2d( Vision.Cameras.CENTER_CAM.robotToCamTransform.getX(), Vision.Cameras.CENTER_CAM.robotToCamTransform.getY() ),
-                                    new Rotation2d( Vision.Cameras.CENTER_CAM.robotToCamTransform.getRotation().getZ() ) );
-
-                            var cameraPose = robotPose.transformBy( CAMERA_TO_ROBOT );
-                            Pose2d targetPose = cameraPose.transformBy( transform );
-
-                            // Go either left/center/right of the april tag depending on what the driver has chosen
-                            visionGoalPose = targetPose.transformBy( getTagToPoseFromPointModifier() );
-
-                            Transform2d tagToRobot = targetPose.minus(cameraPose);
-                            
-                            if( tagToRobot != null )
-                            {
-                                SmartDashboard.putNumber("2340-AprilTag-ID", target.getFiducialId());
-                                SmartDashboard.putString("2340-AprilTag-To-Robot-Pose", "X: " + (double) Math.round( 100 * tagToRobot.getX() ) / 100 + ", Y: " + (double) Math.round( 100 * tagToRobot.getY() ) / 100 + ", Rotation: " + Math.round(tagToRobot.getRotation().getDegrees()) );    
+                            PhotonTrackedTarget target = targetOpt.get();
+                            if( target.getPoseAmbiguity() >= bestAmbiguity ) {
+                                continue;
                             }
 
-                            if( visionGoalPose != null )
-                                field.setRobotPose(visionGoalPose);
+                            bestAmbiguity = target.getPoseAmbiguity();
+                            if( !target.equals( visionLastTarget ) )
+                            {
+                                visionLastTarget = target;
+
+                                var camToTarget = target.getBestCameraToTarget();
+                                var transform = new Transform2d(
+                                        camToTarget.getTranslation().toTranslation2d(),
+                                        camToTarget.getRotation().toRotation2d()
+                                );
+
+                                Transform2d CAMERA_TO_ROBOT = new Transform2d(
+                                        new Translation2d( camera.robotToCamTransform.getX(), camera.robotToCamTransform.getY() ),
+                                        new Rotation2d( camera.robotToCamTransform.getRotation().getZ() ) );
+
+                                var cameraPose = robotPose.transformBy( CAMERA_TO_ROBOT );
+                                Pose2d targetPose = cameraPose.transformBy( transform );
+
+                                // Go either left/center/right of the april tag depending on what the driver has chosen
+                                visionGoalPose = targetPose.transformBy( getTagToPoseFromPointModifier() );
+
+                                Transform2d tagToRobot = targetPose.minus(cameraPose);
+
+                                if( tagToRobot != null )
+                                {
+                                    SmartDashboard.putNumber("2340-AprilTag-ID", target.getFiducialId());
+                                    SmartDashboard.putString("2340-AprilTag-To-Robot-Pose", "X: " + (double) Math.round( 100 * tagToRobot.getX() ) / 100 + ", Y: " + (double) Math.round( 100 * tagToRobot.getY() ) / 100 + ", Rotation: " + Math.round(tagToRobot.getRotation().getDegrees()) );
+                                }
+
+                                if( visionGoalPose != null )
+                                    field.setRobotPose(visionGoalPose);
+                            }
                         }
                     }
                 }
