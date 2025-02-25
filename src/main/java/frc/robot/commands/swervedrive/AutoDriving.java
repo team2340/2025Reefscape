@@ -237,7 +237,8 @@ public class AutoDriving {
 
         driveToPointDashboardChooser.setDefaultOption( point.name(), driveToPoint );
         currentDrivePoint = point;
-
+        visionLastCamera = null;
+        visionLastTarget = null;
         field.setRobotPose(currentDrivePoint.pose);
     }
 
@@ -246,6 +247,8 @@ public class AutoDriving {
 
         driveToPointModifierDashboardChooser.setDefaultOption( pointModifier.name(), pointModifier );
         currentDrivePointModifier = pointModifier;
+        visionLastCamera = null;
+        visionLastTarget = null;
     }
     
     private Transform2d getTagToPoseFromPointModifier()
