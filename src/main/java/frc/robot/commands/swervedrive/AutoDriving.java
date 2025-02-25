@@ -191,6 +191,7 @@ public class AutoDriving {
 
     private boolean isAtTarget = false;
     private PhotonTrackedTarget visionLastTarget = null;
+    private Vision.Cameras visionLastCamera = null;
     private Pose2d visionGoalPose = null;
     private int preciseDriveCount = 0;
     Field2d field = new Field2d();           
@@ -215,12 +216,12 @@ public class AutoDriving {
 
         rotationController.enableContinuousInput( 0, 360 );
 
-        xController.setTolerance(AutoDrivingConstants.PRECISE_POSITION_THRESHOLD, 0.01);
-        yController.setTolerance(AutoDrivingConstants.PRECISE_POSITION_THRESHOLD, 0.01);
+        xController.setTolerance(AutoDrivingConstants.PRECISE_POSITION_THRESHOLD, 0.03);
+        yController.setTolerance(AutoDrivingConstants.PRECISE_POSITION_THRESHOLD, 0.03);
         rotationController.setTolerance(3);
-        SmartDashboard.putData("2340-Auto-Drive Point", driveToPointDashboardChooser );
-        SmartDashboard.putData("2340-Auto-Drive Point Modifier", driveToPointModifierDashboardChooser );
-        SmartDashboard.putData("2340-AutoDrive-VisionGoalPose", field);
+        SmartDashboard.putData("AutoDriving/Drive Point", driveToPointDashboardChooser );
+        SmartDashboard.putData("AutoDriving/Drive Point Modifier", driveToPointModifierDashboardChooser );
+        SmartDashboard.putData("AutoDriving/VisionGoalPose", field);
 
         buildDriveToPoseCommand();
     }
@@ -232,7 +233,7 @@ public class AutoDriving {
 
         DrivePoints point = isRedAlliance ? driveToPoint.redPoint : driveToPoint.bluePoint;
 
-        SmartDashboard.putString( "2340-Current Drive To Point", point.name() );
+        SmartDashboard.putString( "AutoDriving/Drive To Point Name", point.name() );
 
         driveToPointDashboardChooser.setDefaultOption( point.name(), driveToPoint );
         currentDrivePoint = point;
@@ -241,7 +242,7 @@ public class AutoDriving {
     }
 
     public void setDriveToPointModifier(DrivePointModifier pointModifier) {
-        SmartDashboard.putString( "2340-Current Drive To Point Modifier", pointModifier.name() );
+        SmartDashboard.putString( "AutoDriving/Drive To Point Modifier Name", pointModifier.name() );
 
         driveToPointModifierDashboardChooser.setDefaultOption( pointModifier.name(), pointModifier );
         currentDrivePointModifier = pointModifier;
@@ -379,14 +380,13 @@ public class AutoDriving {
                                 .filter( t -> t.getFiducialId() == currentDrivePoint.getAprilTagId() )
                                 .findFirst();
 
-                        SmartDashboard.putBoolean("2340-AprilTag-Found", targetOpt.isPresent());
+                        SmartDashboard.putBoolean("AutoDriving/AprilTagFound", targetOpt.isPresent());
                         if( targetOpt.isPresent() )
                         {
                             PhotonTrackedTarget target = targetOpt.get();
-                            if( target.getPoseAmbiguity() >= bestAmbiguity ) {
+                            if( target.getPoseAmbiguity() >= Vision.maximumAmbiguity || target.getPoseAmbiguity() >= bestAmbiguity ) {
                                 continue;
                             }
-
                             bestAmbiguity = target.getPoseAmbiguity();
                             if( !target.equals( visionLastTarget ) )
                             {
@@ -412,12 +412,22 @@ public class AutoDriving {
 
                                 if( tagToRobot != null )
                                 {
-                                    SmartDashboard.putNumber("2340-AprilTag-ID", target.getFiducialId());
-                                    SmartDashboard.putString("2340-AprilTag-To-Robot-Pose", "X: " + (double) Math.round( 100 * tagToRobot.getX() ) / 100 + ", Y: " + (double) Math.round( 100 * tagToRobot.getY() ) / 100 + ", Rotation: " + Math.round(tagToRobot.getRotation().getDegrees()) );
+                                    SmartDashboard.putNumber("AutoDriving/AprilTagId", target.getFiducialId());
+                                    SmartDashboard.putString("AutoDriving/AprilTag-To-Robot-Pose", "X: " + (double) Math.round( 100 * tagToRobot.getX() ) / 100 + ", Y: " + (double) Math.round( 100 * tagToRobot.getY() ) / 100 + ", Rotation: " + Math.round(tagToRobot.getRotation().getDegrees()) );
                                 }
 
-                                if( visionGoalPose != null )
+                                if( visionGoalPose != null ) {
                                     field.setRobotPose(visionGoalPose);
+                                    if( camera == visionLastCamera )
+                                    {
+                                        visionLastCamera = camera;
+                                        xController.setGoal(visionGoalPose.getX());
+                                        yController.setGoal(visionGoalPose.getY());
+                                        rotationController.setGoal(visionGoalPose.getRotation().getDegrees());
+                                        return;
+                                    }
+                                    visionLastCamera = camera;
+                                }
                             }
                         }
                     }
@@ -429,7 +439,6 @@ public class AutoDriving {
                     yController.setGoal(visionGoalPose.getY());
                     rotationController.setGoal(visionGoalPose.getRotation().getDegrees());
                 }
-
             }
     }
 
