@@ -41,12 +41,18 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         pivotSparkMax.set(0);
     }
 
+    public void resetPIDControllers() {
+        pivotPIDController.reset(getCurrentPivotEncoderPosition());
+        elevatorPIDController.reset(getCurrentElevatorEncoderPosition());
+    }
+
     public enum ElevatorPositions {
         INTAKE(0, 10),
         L1(20 +5, 10),
         L2(46 +15, 10),
         L3(119 +15, 10),
-        L4(219, 10);
+        L4(219, 10),
+        PROCESSOR(0, 10);
 
         private long encoderPosition;
         private long minimumPivotEncoder;
@@ -224,9 +230,9 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         // If the bottom limit switch is hit, then reset the encoder to 0
         if( !bottomLimitSwitch.get() )
         {
-            elevatorSparkMax.getEncoder().setPosition(-5);
             if( !homed )
             {
+                elevatorSparkMax.getEncoder().setPosition(-5);
                 stopElevator();
             }
             homed = true;

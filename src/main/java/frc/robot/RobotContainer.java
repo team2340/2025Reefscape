@@ -79,6 +79,8 @@ public class RobotContainer
     NamedCommands.registerCommand("test", Commands.print("I EXIST"));
     NamedCommands.registerCommand( "SetReef_1", new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_1 )) );
     NamedCommands.registerCommand( "AlignToReef", driveToReef.getDrivePreciseCommand() );
+
+    drivebase.replaceSwerveModuleFeedforward(0.3459, 2.4236, 0.39497);
   }
 
   /**
@@ -97,6 +99,7 @@ public class RobotContainer
     driverXbox.b().onTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
     driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ) );
     driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ) );
+
 
     configureStreamDeckBindings();
   }
@@ -207,4 +210,10 @@ public class RobotContainer
   {
     drivebase.setMotorBrake(brake);
   }
+
+  public void resetPIDControllers()
+  {
+    elevatorSubsystem.resetPIDControllers();
+  }
+
 }

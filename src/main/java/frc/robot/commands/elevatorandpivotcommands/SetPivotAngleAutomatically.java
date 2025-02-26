@@ -32,6 +32,7 @@ public class SetPivotAngleAutomatically {
             case BLUE_PROCESSOR:
             case RED_PROCESSOR:
             {
+                elevatorAndPivotSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.PROCESSOR );
                 elevatorAndPivotSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_ALGAE );
             }
             default:
