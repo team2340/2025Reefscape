@@ -343,9 +343,9 @@ public class AutoDriving {
 
             // Sets the PID controller's current robot position initially
             Pose2d robotPose = swerve.getPose();
-            xController.reset( robotPose.getX() );
-            yController.reset( robotPose.getY() );
-            rotationController.reset( robotPose.getRotation().getDegrees() );
+            xController.reset( robotPose.getX(), xController.getSetpoint().velocity );
+            yController.reset( robotPose.getY(), yController.getSetpoint().velocity );
+            rotationController.reset( robotPose.getRotation().getDegrees(), rotationController.getSetpoint().velocity );
             isAtTarget = false;
             visionLastTarget = null;
             preciseDriveCount = 0;

@@ -90,7 +90,7 @@ public class AutonomousModeChooser {
             else
             {
                 Supplier<Command> supplier = () -> new InstantCommand( () -> driveToReef.setDriveToPoint( point )).
-                        andThen( driveToReef.getCommand() );
+                        andThen( driveToReef.getAutonomousCommand() );
 
                 chooser.addOption( "Drive to " + point.name(),  supplier);
             }
