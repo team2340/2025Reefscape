@@ -47,7 +47,7 @@ public class AutonomousModeChooser {
             addScoringActions( chooser );
 
 
-            SmartDashboard.putData( "Auto Action " + (i + 1), chooser );
+            SmartDashboard.putData( "AutonomousModeChooser/Auto Action " + (i + 1), chooser );
 
             listOfActions.add( chooser );
         }

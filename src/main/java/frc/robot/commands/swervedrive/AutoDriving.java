@@ -2,6 +2,7 @@ package frc.robot.commands.swervedrive;
 
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -58,8 +59,7 @@ public class AutoDriving {
     }
     public enum DrivePoints{
         RED_REEF_1(
-                //new Pose2d( 14.82, 4.01, Rotation2d.fromDegrees( 180.00 ) ),
-                new Pose2d( 15.65, 4.01, Rotation2d.fromDegrees( 180.00 ) ),
+                new Pose2d( 14.82, 4.01, Rotation2d.fromDegrees( 180.00 ) ),
                 7
         ),
         RED_REEF_2(
@@ -193,6 +193,9 @@ public class AutoDriving {
     private PhotonTrackedTarget visionLastTarget = null;
     private Vision.Cameras visionLastCamera = null;
     private Pose2d visionGoalPose = null;
+    MedianFilter xGoalPoseFilter = new MedianFilter(20);
+    MedianFilter yGoalPoseFilter = new MedianFilter(20);
+    MedianFilter rotationGoalPoseFilter = new MedianFilter(20);
     private int preciseDriveCount = 0;
     Field2d field = new Field2d();           
 
@@ -222,6 +225,9 @@ public class AutoDriving {
         SmartDashboard.putData("AutoDriving/Drive Point", driveToPointDashboardChooser );
         SmartDashboard.putData("AutoDriving/Drive Point Modifier", driveToPointModifierDashboardChooser );
         SmartDashboard.putData("AutoDriving/VisionGoalPose", field);
+        SmartDashboard.putData( "AutoDriving/PIDTranslationXController", xController);
+        SmartDashboard.putData( "AutoDriving/PIDTranslationYController", yController);
+        SmartDashboard.putString("AutoDriving/CurrentDrivingMode", "MANUAL");
 
         buildDriveToPoseCommand();
     }
@@ -239,6 +245,9 @@ public class AutoDriving {
         currentDrivePoint = point;
         visionLastCamera = null;
         visionLastTarget = null;
+        xGoalPoseFilter.reset();
+        yGoalPoseFilter.reset();
+        rotationGoalPoseFilter.reset();
         field.setRobotPose(currentDrivePoint.pose);
     }
 
@@ -249,6 +258,9 @@ public class AutoDriving {
         currentDrivePointModifier = pointModifier;
         visionLastCamera = null;
         visionLastTarget = null;
+        xGoalPoseFilter.reset();
+        yGoalPoseFilter.reset();
+        rotationGoalPoseFilter.reset();
     }
     
     private Transform2d getTagToPoseFromPointModifier()
@@ -269,6 +281,7 @@ public class AutoDriving {
     {
         return getDriveToPoseCommand()
                 .until( () -> {
+                    SmartDashboard.putString("AutoDriving/CurrentDrivingMode", "DRIVE_PATHPLANNER");
                    Pose2d currentPose = swerve.getPose();
                    Pose2d targetPose = currentDrivePoint.getPoint( currentDrivePointModifier );
                    double distance = currentPose.getTranslation().getDistance( targetPose.getTranslation() );
@@ -326,7 +339,8 @@ public class AutoDriving {
     public Command getDrivePreciseCommand()
     {
         return Commands.runOnce( () -> {
-            System.out.println("Starting drive precise");
+            SmartDashboard.putString("AutoDriving/CurrentDrivingMode", "DRIVE_PRECISE");
+
             // Sets the PID controller's current robot position initially
             Pose2d robotPose = swerve.getPose();
             xController.reset( robotPose.getX() );
@@ -357,6 +371,7 @@ public class AutoDriving {
             if( xController.atSetpoint() && yController.atSetpoint() && rotationController.atSetpoint() && preciseDriveCount > 10 )
             {
                 isAtTarget = true;
+                SmartDashboard.putString("AutoDriving/CurrentDrivingMode", "FINISHED");
             }
 
             // Send the calculated drive values to the swerve drive subsystem
@@ -420,6 +435,12 @@ public class AutoDriving {
                                 }
 
                                 if( visionGoalPose != null ) {
+
+                                    visionGoalPose = new Pose2d(
+                                            xGoalPoseFilter.calculate(visionGoalPose.getX()),
+                                            yGoalPoseFilter.calculate(visionGoalPose.getY()),
+                                            Rotation2d.fromDegrees( rotationGoalPoseFilter.calculate(visionGoalPose.getRotation().getDegrees())));
+
                                     field.setRobotPose(visionGoalPose);
                                     if( camera == visionLastCamera )
                                     {
