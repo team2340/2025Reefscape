@@ -1,12 +1,11 @@
 package frc.robot.commands.swervedrive;
 
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.MedianFilter;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -27,6 +26,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class AutoDriving {
+    private final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+
     private final SendableChooser<DriveToPoint> driveToPointDashboardChooser = new SendableChooser<>();
     private final SendableChooser<DrivePointModifier> driveToPointModifierDashboardChooser = new SendableChooser<>();
     private final Vision vision;
@@ -211,7 +212,7 @@ public class AutoDriving {
     Field2d field = new Field2d();           
 
 
-    public AutoDriving( SwerveSubsystem swerve )
+    public AutoDriving(SwerveSubsystem swerve )
     {
         this.swerve = swerve;
         this.vision = swerve.getVision();
@@ -366,7 +367,7 @@ public class AutoDriving {
             Pose2d robotPose = swerve.getPose();
             preciseDriveCount++;
 
-            setPoseToAprilTag();
+            setDesiredPose();
 
             if( !currentDrivePoint.hasAprilTag() || visionGoalPose == null) // If there is no AprilTag associated with the location, then just try to use odometry to get close to where we need to be
             {
@@ -392,13 +393,49 @@ public class AutoDriving {
         .until( () -> isAtTarget );
     }
 
-    public void setPoseToAprilTag()
+    public void setDesiredPose()
+    {
+        setPoseUsingOdometry();
+
+    }
+    /**
+     * Sets the pose using odometry
+     */
+    private void setPoseUsingOdometry()
+    {
+        if( currentDrivePoint.hasAprilTag() )
+        {
+            Optional<Pose3d> aprilTagPose3d = fieldLayout.getTagPose( currentDrivePoint.getAprilTagId() );
+            if( aprilTagPose3d.isPresent() )
+            {
+                Pose2d aprilTagPose = aprilTagPose3d.get().toPose2d();
+
+                Pose2d tagToRobot = swerve.getPose().relativeTo( aprilTagPose );
+                SmartDashboard.putNumber("AutoDriving/AprilTagId", currentDrivePoint.getAprilTagId() );
+                SmartDashboard.putString("AutoDriving/AprilTag-To-Robot-Pose", "X: " + (double) Math.round( 100 * tagToRobot.getX() ) / 100 + ", Y: " + (double) Math.round( 100 * tagToRobot.getY() ) / 100 + ", Rotation: " + Math.round(tagToRobot.getRotation().getDegrees()) );
+
+                Transform2d tagTransform = currentDrivePoint.transformFromAprilTag != null ? currentDrivePoint.transformFromAprilTag : getTagToPoseFromPointModifier();
+                visionGoalPose = aprilTagPose.transformBy( tagTransform );
+
+                xController.setGoal(visionGoalPose.getX());
+                yController.setGoal(visionGoalPose.getY());
+                rotationController.setGoal(visionGoalPose.getRotation().getDegrees());
+                field.setRobotPose(visionGoalPose);
+            }
+        }
+    }
+
+    /**
+     * Sets the pose using what the cameras see for april tags
+     */
+    private void setPoseToAprilTag()
     {
         if( currentDrivePoint.hasAprilTag() ) // If there is an AprilTag associated with the location, then position the robot in relative to that
             {
                 Pose2d robotPose = swerve.getPose();
                 // Code from https://github.com/STMARobotics/frc-7028-2023/blob/301928718c80cc6db3c29a6bfad8b36483baf1b4/src/main/java/frc/robot/commands/ChaseTagCommand.java
                 double bestAmbiguity = Double.MAX_VALUE;
+                boolean apriltagFound = false;
                 for(Vision.Cameras camera : Vision.Cameras.values() )
                 {
                     Optional<PhotonPipelineResult> visionResults = camera.getLatestResult();
@@ -409,9 +446,9 @@ public class AutoDriving {
                                 .filter( t -> t.getFiducialId() == currentDrivePoint.getAprilTagId() )
                                 .findFirst();
 
-                        SmartDashboard.putBoolean("AutoDriving/AprilTagFound", targetOpt.isPresent());
                         if( targetOpt.isPresent() )
                         {
+                            apriltagFound = true;
                             PhotonTrackedTarget target = targetOpt.get();
                             if( target.getPoseAmbiguity() >= Vision.maximumAmbiguity || target.getPoseAmbiguity() >= bestAmbiguity ) {
                                 continue;
@@ -467,7 +504,7 @@ public class AutoDriving {
                         }
                     }
                 }
-
+                SmartDashboard.putBoolean("AutoDriving/AprilTagFound", apriltagFound);
                 if( visionGoalPose != null)
                 {
                     xController.setGoal(visionGoalPose.getX());

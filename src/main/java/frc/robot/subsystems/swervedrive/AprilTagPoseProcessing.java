@@ -14,6 +14,6 @@ public class AprilTagPoseProcessing extends SubsystemBase{
     @Override
     public void periodic()
     {
-        autoDriving.setPoseToAprilTag();
+        autoDriving.setDesiredPose();
     }
 }
