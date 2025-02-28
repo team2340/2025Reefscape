@@ -80,16 +80,18 @@ public class AutoDriving {
         ),
         RED_REEF_6(
                 new Pose2d( 13.91, 2.52, Rotation2d.fromDegrees( 120.00 ) ),
-                7
+                6
         ),
 
         BLUE_CORAL_LEFT(
                 new Pose2d(1.14, 6.89, Rotation2d.fromDegrees( 305 )),
-                13),
+                13,
+                AutoDrivingConstants.CORAL_STATION_TAG_TO_GOAL),
 
         BLUE_CORAL_RIGHT(
                 new Pose2d(1.32, 1.09, Rotation2d.fromDegrees( 56 )),
-                12),
+                12,
+                AutoDrivingConstants.CORAL_STATION_TAG_TO_GOAL),
 
         BLUE_PROCESSOR(
                 new Pose2d(11.29, 7.51, Rotation2d.fromDegrees( 90 )),
@@ -121,12 +123,14 @@ public class AutoDriving {
         ),
 
         RED_CORAL_LEFT(
-                new Pose2d(16.18,1.06, Rotation2d.fromDegrees( -52 )),
-                1),
+                new Pose2d(16.18,1.06, Rotation2d.fromDegrees( -232 )),
+                1,
+                AutoDrivingConstants.CORAL_STATION_TAG_TO_GOAL),
 
         RED_CORAL_RIGHT(
-                new Pose2d(16.36, 6.90, Rotation2d.fromDegrees( 52 )),
-                2),
+                new Pose2d(16.36, 6.90, Rotation2d.fromDegrees( 232 )),
+                2,
+                AutoDrivingConstants.CORAL_STATION_TAG_TO_GOAL),
         
         RED_PROCESSOR(
                 new Pose2d(5.98, 0.79, Rotation2d.fromDegrees( -90 )),
@@ -135,10 +139,17 @@ public class AutoDriving {
 
         private final Pose2d pose;
         private final Integer aprilTagId;
+        private final Transform2d transformFromAprilTag;
+
         DrivePoints( Pose2d centerPose, Integer aprilTagId )
+        {
+            this( centerPose, aprilTagId, null);
+        }
+        DrivePoints( Pose2d centerPose, Integer aprilTagId, Transform2d transformFromAprilTag )
         {
             this.pose = centerPose;
             this.aprilTagId = aprilTagId;
+            this.transformFromAprilTag = transformFromAprilTag;
         }
 
         public Pose2d getPoint( DrivePointModifier modifier )
@@ -424,7 +435,7 @@ public class AutoDriving {
                                 Pose2d targetPose = cameraPose.transformBy( transform );
 
                                 // Go either left/center/right of the april tag depending on what the driver has chosen
-                                visionGoalPose = targetPose.transformBy( getTagToPoseFromPointModifier() );
+                                visionGoalPose = targetPose.transformBy( currentDrivePoint.transformFromAprilTag != null ? currentDrivePoint.transformFromAprilTag : getTagToPoseFromPointModifier() );
 
                                 Transform2d tagToRobot = targetPose.minus(cameraPose);
 
