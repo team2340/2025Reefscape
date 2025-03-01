@@ -18,7 +18,16 @@ public class MovePivotToSafePosition extends Command {
 
     @Override
     public void initialize() {
-        elevatorAndPivotSubsystem.setPivotPIDControllerSetpoint( ElevatorAndPivotConstants.MINIMUM_PIVOT_ANGLE_FOR_ELEVATOR_MOVEMENT );
+        if( elevatorAndPivotSubsystem.getQueuedElevatorPosition() == ElevatorAndPivotSubsystem.ElevatorPositions.L4 || elevatorAndPivotSubsystem.getCurrentDesiredElevatorPosition() == ElevatorAndPivotSubsystem.ElevatorPositions.L4) {
+            elevatorAndPivotSubsystem.setPivotPIDControllerSetpoint(ElevatorAndPivotConstants.MINIMUM_PIVOT_ANGLE_FOR_ELEVATOR_MOVEMENT_L4);
+        }
+        else if( elevatorAndPivotSubsystem.getQueuedElevatorPosition() == ElevatorAndPivotSubsystem.ElevatorPositions.L3 || elevatorAndPivotSubsystem.getCurrentDesiredElevatorPosition() == ElevatorAndPivotSubsystem.ElevatorPositions.L3) {
+            elevatorAndPivotSubsystem.setPivotPIDControllerSetpoint(ElevatorAndPivotConstants.MINIMUM_PIVOT_ANGLE_FOR_ELEVATOR_MOVEMENT_L3);
+
+        } else
+        {
+            elevatorAndPivotSubsystem.setPivotPIDControllerSetpoint(ElevatorAndPivotConstants.MINIMUM_PIVOT_ANGLE_FOR_ELEVATOR_MOVEMENT_Normal);
+        }
         elevatorAndPivotSubsystem.run();
 
     }

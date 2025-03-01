@@ -344,19 +344,19 @@ public class Vision
       new Translation3d(Units.inchesToMeters(.241),
                         Units.inchesToMeters(0.095),
                         Units.inchesToMeters(0.225)),
-      VecBuilder.fill(.1, .1, 8), VecBuilder.fill(.1, .1, 1)),
+      VecBuilder.fill(.1, .1, 2), VecBuilder.fill(.1, .1, 1)),
     RIGHT_CAM("RightCamera",
             new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(25)),
             new Translation3d(Units.inchesToMeters(.241),
                     Units.inchesToMeters(-0.095),
                     Units.inchesToMeters(0.225)),
-            VecBuilder.fill(.1, .1, 8), VecBuilder.fill(.1, .1, 1)),
+            VecBuilder.fill(.1, .1, 2), VecBuilder.fill(.1, .1, 1)),
     BACK_CAM("BackCamera",
             new Rotation3d(0, Units.degreesToRadians(-45), Units.degreesToRadians(180)),
             new Translation3d(Units.inchesToMeters(0),
                     Units.inchesToMeters(0),
                     Units.inchesToMeters(1.106)),
-            VecBuilder.fill(.1, .1, 8), VecBuilder.fill(.1, .1, 1)),
+            VecBuilder.fill(.1, .1, 2), VecBuilder.fill(.1, .1, 1)),
     ;
 
     /**

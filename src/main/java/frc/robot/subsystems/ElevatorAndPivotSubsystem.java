@@ -49,8 +49,8 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
     public enum ElevatorPositions {
         INTAKE(0, 10),
         L1(20 +5, 10),
-        L2(46 +15, 10),
-        L3(119 +15, 10),
+        L2(46, 10),
+        L3(120, 10),
         L4(219, 10),
         PROCESSOR(0, 10);
 
@@ -72,7 +72,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
 
     public enum PivotAngles {
         STOWED( 0.4866 ),
-        DEPLOY_CORAL(.559),
+        DEPLOY_CORAL(.530),
         INTAKE_ALGAE(.630),
         DEPLOY_CORAL_L4(.535),
         DEPLOY_ALGAE(.728);

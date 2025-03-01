@@ -233,12 +233,13 @@ public class AutoDriving {
 
         xController.setTolerance(AutoDrivingConstants.PRECISE_POSITION_THRESHOLD, 0.03);
         yController.setTolerance(AutoDrivingConstants.PRECISE_POSITION_THRESHOLD, 0.03);
-        rotationController.setTolerance(3);
+        rotationController.setTolerance(0.2);
         SmartDashboard.putData("AutoDriving/Drive Point", driveToPointDashboardChooser );
         SmartDashboard.putData("AutoDriving/Drive Point Modifier", driveToPointModifierDashboardChooser );
         SmartDashboard.putData("AutoDriving/VisionGoalPose", field);
         SmartDashboard.putData( "AutoDriving/PIDTranslationXController", xController);
         SmartDashboard.putData( "AutoDriving/PIDTranslationYController", yController);
+        SmartDashboard.putData( "AutoDriving/PIDRotationController", rotationController);
         SmartDashboard.putString("AutoDriving/CurrentDrivingMode", "MANUAL");
 
         buildDriveToPoseCommand();
@@ -380,6 +381,9 @@ public class AutoDriving {
             double yDriveSpeed = yController.calculate( robotPose.getY() );
             double rotationSpeed = rotationController.calculate( robotPose.getRotation().getDegrees() );
 
+            double xVelocity = xController.getGoal().velocity;
+            double yVelocity = yController.getGoal().velocity;
+            double xRotation = rotationController.getGoal().velocity;
             if( xController.atSetpoint() && yController.atSetpoint() && rotationController.atSetpoint() && preciseDriveCount > 10 )
             {
                 isAtTarget = true;
@@ -387,7 +391,7 @@ public class AutoDriving {
             }
 
             // Send the calculated drive values to the swerve drive subsystem
-            swerve.driveFieldOriented( new ChassisSpeeds( xDriveSpeed, yDriveSpeed, rotationSpeed ) );
+            swerve.driveFieldOriented( new ChassisSpeeds( xVelocity + xDriveSpeed, yVelocity + yDriveSpeed, xRotation + rotationSpeed ) );
 
         }, swerve) )
         .until( () -> isAtTarget );

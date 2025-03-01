@@ -95,7 +95,8 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveWithSetpointGeneratorFieldRelative(driveAngularVelocity);
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-    driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
+    driverXbox.a().whileTrue( driveToReef.getDrivePreciseCommand());
+   // driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
     driverXbox.b().onTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
     driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ) );
     driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ) );
@@ -107,13 +108,29 @@ public class RobotContainer
   private void configureStreamDeckBindings()
   {
     streamDeck.button( 5 )
-            .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L1)));
+            .onTrue( new InstantCommand( () ->
+            {
+              elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L1);
+              elevatorSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_CORAL);
+            }));
     streamDeck.button( 6 )
-            .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L2)));
+            .onTrue( new InstantCommand( () ->
+            {
+              elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L2);
+              elevatorSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_CORAL);
+            }));
     streamDeck.button( 10 )
-            .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L3)));
+            .onTrue( new InstantCommand( () ->
+            {
+              elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L3);
+              elevatorSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_CORAL);
+            }));
     streamDeck.button( 11 )
-            .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L4)));
+            .onTrue( new InstantCommand( () ->
+            {
+              elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L4);
+              elevatorSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_CORAL);
+            }));
     streamDeck.button( 9 )
             .onTrue( new InstantCommand( () -> elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE)));
 
