@@ -80,7 +80,7 @@ public class RobotContainer
     NamedCommands.registerCommand( "SetReef_1", new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_1 )) );
     NamedCommands.registerCommand( "AlignToReef", driveToReef.getDrivePreciseCommand() );
 
-    drivebase.replaceSwerveModuleFeedforward(0.3459, 2.4236, 0.39497);
+    //drivebase.replaceSwerveModuleFeedforward(0.3459, 2.4236, 0.39497);
   }
 
   /**
@@ -95,8 +95,8 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveWithSetpointGeneratorFieldRelative(driveAngularVelocity);
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-    driverXbox.a().whileTrue( driveToReef.getDrivePreciseCommand());
-   // driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
+    //driverXbox.a().whileTrue( driveToReef.getDrivePreciseCommand().andThen( new PrintCommand("Done!")));
+    driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
     driverXbox.b().onTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
     driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ) );
     driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ) );
