@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
@@ -75,12 +76,6 @@ public class RobotContainer
 
     elevatorSubsystem.setDefaultCommand( new RepeatCommand( new InstantCommand( elevatorSubsystem::run, elevatorSubsystem )));
     coralAlgaeDevice.setDefaultCommand( new RepeatCommand( new InstantCommand( coralAlgaeDevice::run, coralAlgaeDevice )));
-
-    NamedCommands.registerCommand("test", Commands.print("I EXIST"));
-    NamedCommands.registerCommand( "SetReef_1", new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_1 )) );
-    NamedCommands.registerCommand( "AlignToReef", driveToReef.getDrivePreciseCommand() );
-
-    //drivebase.replaceSwerveModuleFeedforward(0.3459, 2.4236, 0.39497);
   }
 
   /**
@@ -95,11 +90,10 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveWithSetpointGeneratorFieldRelative(driveAngularVelocity);
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
-    //driverXbox.a().whileTrue( driveToReef.getDrivePreciseCommand().andThen( new PrintCommand("Done!")));
-    driverXbox.a().whileTrue( driveToReef.getCommand().andThen(new PrintCommand("Done!")) );
-    driverXbox.b().onTrue( runCoralAlgaeDeviceAutomatic.getCommand() );
-    driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ) );
-    driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ) );
+    driverXbox.a().whileTrue( driveToReef.getCommand().andThen( new RumbleJoystick( driverSwerve ) ) );
+    driverXbox.b().onTrue( runCoralAlgaeDeviceAutomatic.getCommand().andThen( new RumbleJoystick( driverSwerve ) )  );
+    driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ).andThen( new RumbleJoystick( driverSwerve ) )  );
+    driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ).andThen( new RumbleJoystick( driverSwerve ) )  );
 
 
     configureStreamDeckBindings();
