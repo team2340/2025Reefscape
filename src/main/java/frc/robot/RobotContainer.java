@@ -141,11 +141,23 @@ public class RobotContainer
     streamDeck.button( 19 )
             .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.REEF_6 )) );
     streamDeck.button( 15 )
-            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.PROCESSOR )) );
+            .onTrue( new InstantCommand( () -> {
+              driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.PROCESSOR );
+              elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE);
+              elevatorSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_ALGAE);
+            }) );
     streamDeck.button( 22 )
-            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.CORAL_STATION_LEFT )) );
+            .onTrue( new InstantCommand( () -> {
+              driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.CORAL_STATION_LEFT );
+              elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE);
+              elevatorSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.STOWED);
+            }) );
     streamDeck.button( 23 )
-            .onTrue( new InstantCommand( () -> driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.CORAL_STATION_RIGHT )) );
+            .onTrue( new InstantCommand( () -> {
+              driveToReef.setDriveToPoint( AutoDriving.DriveToPoint.CORAL_STATION_RIGHT );
+              elevatorSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE);
+              elevatorSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.STOWED);
+            }) );
 
     streamDeck.button( 24 )
             .onTrue( new InstantCommand( () -> driveToReef.setDriveToPointModifier( AutoDriving.DrivePointModifier.LEFT )) );
