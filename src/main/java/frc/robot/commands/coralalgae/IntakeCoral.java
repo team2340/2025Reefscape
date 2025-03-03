@@ -5,6 +5,8 @@ import frc.robot.subsystems.CoralAlgaeDevice;
 
 public class IntakeCoral extends Command {
     private CoralAlgaeDevice coralAlgaeDevice = null;
+    private boolean hasCoral = false;
+    private int count = 0;
 
     public IntakeCoral(CoralAlgaeDevice coralAlgaeDevice )
     {
@@ -14,17 +16,37 @@ public class IntakeCoral extends Command {
     @Override
     public void initialize() {
         super.initialize();
+        count = 0;
+        hasCoral = false;
     }
 
     @Override
     public void execute() {
-        coralAlgaeDevice.runCoralIntake();
-        coralAlgaeDevice.run();
+        if( !hasCoral )
+        {
+            coralAlgaeDevice.runCoralIntake();
+            coralAlgaeDevice.run();
+        }
+        else
+        {
+            coralAlgaeDevice.runCoralIntakeBackwards();
+        }
+
+
+        if( coralAlgaeDevice.frontSensorHasCoral() && !coralAlgaeDevice.rearSensorHasCoral() && !hasCoral )
+        {
+            hasCoral = true;
+        }
+
+        if( hasCoral )
+        {
+            count += 1;
+        }
     }
 
     @Override
     public boolean isFinished() {
-        return coralAlgaeDevice.frontSensorHasCoral() && !coralAlgaeDevice.rearSensorHasCoral();
+        return hasCoral && count > 10;
     }
 
     @Override

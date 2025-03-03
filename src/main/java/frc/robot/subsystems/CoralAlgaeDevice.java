@@ -84,4 +84,9 @@ public class CoralAlgaeDevice extends SubsystemBase {
         SmartDashboard.putNumber("CoralAlgaeDevice/TopAlgaeMotorRPM", getTopAlgaeRPM());
         SmartDashboard.putNumber("CoralAlgaeDevice/BottomAlgaeMotorRPM", getBottomAlgaeRPM());
     }
+
+    public void runCoralIntakeBackwards() {
+        bottomMotor.set(0.5);
+        middleMotor.set(-0.5);
+    }
 }
