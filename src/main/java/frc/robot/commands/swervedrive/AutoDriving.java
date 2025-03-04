@@ -97,7 +97,8 @@ public class AutoDriving {
 
         BLUE_PROCESSOR(
                 new Pose2d(11.29, 7.51, Rotation2d.fromDegrees( 90 )),
-                3),
+                3,
+                AutoDrivingConstants.PROCESSOR_TAG_TO_GOAL),
 
         BLUE_REEF_1(
                 new Pose2d( 2.79, 4.01, Rotation2d.fromDegrees( 0.00 ) ),
@@ -136,7 +137,8 @@ public class AutoDriving {
         
         RED_PROCESSOR(
                 new Pose2d(5.98, 0.79, Rotation2d.fromDegrees( -90 )),
-                16);
+                16,
+                AutoDrivingConstants.PROCESSOR_TAG_TO_GOAL);
 
 
         private final Pose2d pose;

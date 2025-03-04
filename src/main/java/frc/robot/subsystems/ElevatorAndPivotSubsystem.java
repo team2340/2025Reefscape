@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ElevatorAndPivotConstants;
+import frc.robot.subsystems.swervedrive.Vision;
 
 public class ElevatorAndPivotSubsystem extends SubsystemBase {
     private boolean homed = false;
@@ -231,6 +232,9 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         SmartDashboard.putNumber( "ElevatorAndPivot/DesiredPivotEncoder", pivotPIDController.getSetpoint().position );
         SmartDashboard.putBoolean( "ElevatorAndPivot/PivotAtSetpoint", pivotPIDController.atSetpoint() );
 
+        SmartDashboard.putString( "ElevatorAndPivot/CurrentElevatorPosition", getCurrentDesiredElevatorPosition() != null ? getCurrentDesiredElevatorPosition().name() : "NONE" );
+        SmartDashboard.putString( "ElevatorAndPivot/NextElevatorPosition", getQueuedElevatorPosition() != null ? getQueuedElevatorPosition().name() : "NONE" );
+
         // If the bottom limit switch is hit, then reset the encoder to 0
         if( !bottomLimitSwitch.get() )
         {
@@ -253,6 +257,10 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         }
 
         movePivotToDesiredAngle();
+    }
+
+    public void publishReadyChecks() {
+        SmartDashboard.putBoolean("ReadyChecks/PivotEncoder", pivotEncoder.isConnected());
     }
 
 }

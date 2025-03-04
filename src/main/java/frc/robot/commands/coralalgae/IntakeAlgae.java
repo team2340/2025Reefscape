@@ -34,6 +34,10 @@ public class IntakeAlgae extends Command {
     @Override
     public void end(boolean interrupted) {
         coralAlgaeDevice.stop();
+        if( !interrupted )
+        {
+            coralAlgaeDevice.setHasPiece( true );
+        }
         Lights.getInstance().setDefaultPattern();
     }
 }

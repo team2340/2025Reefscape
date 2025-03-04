@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -31,8 +32,11 @@ import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.swervedrive.AprilTagPoseProcessing;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
+import java.util.Map;
 
+import frc.robot.subsystems.swervedrive.Vision;
 import swervelib.SwerveInputStream;
+import swervelib.SwerveModule;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -247,4 +251,18 @@ public class RobotContainer
     elevatorSubsystem.resetPIDControllers();
   }
 
+  public void publishReadyChecks()
+  {
+      elevatorSubsystem.publishReadyChecks();
+      coralAlgaeDevice.publishReadyChecks();
+      SmartDashboard.putBoolean("ReadyChecks/BackCamera", Vision.Cameras.BACK_CAM.camera.isConnected());
+      SmartDashboard.putBoolean("ReadyChecks/LeftCamera", Vision.Cameras.LEFT_CAM.camera.isConnected());
+      SmartDashboard.putBoolean("ReadyChecks/RightCamera", Vision.Cameras.RIGHT_CAM.camera.isConnected());
+
+      Map<String, SwerveModule> swerveModules = drivebase.getSwerveDrive().getModuleMap();
+      for(Map.Entry<String, SwerveModule> entry : swerveModules.entrySet() )
+      {
+          SmartDashboard.putBoolean("ReadyChecks/Swerve_" + entry.getKey() + "Encoder", !entry.getValue().getAbsoluteEncoderReadIssue() );
+      }
+  }
 }

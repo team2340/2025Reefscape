@@ -19,6 +19,7 @@ public class IntakeCoral extends Command {
         super.initialize();
         count = 0;
         hasCoral = false;
+        coralAlgaeDevice.setHasPiece( false );
         Lights.getInstance().setPattern( Lights.PATTERN.INTAKE_CORAL );
     }
 
@@ -54,6 +55,10 @@ public class IntakeCoral extends Command {
     @Override
     public void end(boolean interrupted) {
         coralAlgaeDevice.stop();
+        if( !interrupted )
+        {
+            coralAlgaeDevice.setHasPiece( true );
+        }
         Lights.getInstance().setDefaultPattern();
     }
 }

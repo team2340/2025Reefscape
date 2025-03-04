@@ -18,6 +18,8 @@ public class CoralAlgaeDevice extends SubsystemBase {
     private SparkMax topMotor = new SparkMax(14, SparkLowLevel.MotorType.kBrushless);
     private SparkMax bottomMotor = new SparkMax(12, SparkLowLevel.MotorType.kBrushless);
 
+    private boolean hasPiece;
+
     public CoralAlgaeDevice()
     {
         SparkMaxConfig config = new SparkMaxConfig();
@@ -83,10 +85,21 @@ public class CoralAlgaeDevice extends SubsystemBase {
 
         SmartDashboard.putNumber("CoralAlgaeDevice/TopAlgaeMotorRPM", getTopAlgaeRPM());
         SmartDashboard.putNumber("CoralAlgaeDevice/BottomAlgaeMotorRPM", getBottomAlgaeRPM());
+        SmartDashboard.putBoolean("CoralAlgaeDevice/HasPiece", hasPiece || frontSensorHasCoral() && rearSensorHasCoral() );
+
+    }
+
+    public void setHasPiece(boolean hasPiece) {
+        this.hasPiece = hasPiece;
     }
 
     public void runCoralIntakeBackwards() {
         bottomMotor.set(0.5);
         middleMotor.set(-0.5);
+    }
+
+    public void publishReadyChecks() {
+        SmartDashboard.putBoolean("ReadyChecks/CoralRearSensor", rearSensor.getOutput() > 0);
+        SmartDashboard.putBoolean("ReadyChecks/CoralFrontSensor", frontSensor.getOutput() > 0);
     }
 }

@@ -17,6 +17,9 @@ public class AutoDrivingConstants {
     public static final Transform2d TAG_TO_GOAL_RIGHT = new Transform2d(new Translation2d(.23, 0.3), Rotation2d.fromDegrees(-175.0));
 
     public static final Transform2d CORAL_STATION_TAG_TO_GOAL = new Transform2d( new Translation2d(1, 0), Rotation2d.fromDegrees(0));
+    public static final Transform2d PROCESSOR_TAG_TO_GOAL = new Transform2d( new Translation2d(1, 0), Rotation2d.fromDegrees(180));;
+
+
     // PID Controller values for the precise drive to target
     public static final double PRECISE_AUTO_DRIVE_TRANSLATION_PID_MAX_SPEED = Constants.MAX_SPEED * 0.5;
     public static final double PRECISE_AUTO_DRIVE_TRANSLATION_PID_MAX_ACCEL = 1;
@@ -31,7 +34,6 @@ public class AutoDrivingConstants {
     public static final double PRECISE_AUTO_DRIVE_ROTATION_PID_Kp = 0.25;
     public static final double PRECISE_AUTO_DRIVE_ROTATION_PID_Ki = 0.05;
     public static final double PRECISE_AUTO_DRIVE_ROTATION_PID_Kd = .0;
-
 
 
 }

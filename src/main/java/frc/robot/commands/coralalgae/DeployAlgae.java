@@ -34,6 +34,7 @@ public class DeployAlgae extends Command {
     @Override
     public void end(boolean interrupted) {
         coralAlgaeDevice.stop();
+        coralAlgaeDevice.setHasPiece( false );
         Lights.getInstance().setDefaultPattern();
     }
 }
