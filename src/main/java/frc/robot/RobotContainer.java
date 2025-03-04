@@ -27,6 +27,7 @@ import frc.robot.commands.manualjogcommands.JogPivotOut;
 import frc.robot.commands.swervedrive.AutoDriving;
 import frc.robot.subsystems.CoralAlgaeDevice;
 import frc.robot.subsystems.ElevatorAndPivotSubsystem;
+import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.swervedrive.AprilTagPoseProcessing;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
@@ -54,6 +55,7 @@ public class RobotContainer
   private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
   private final SetPivotAngleAutomatically setPivotAngleAutomatically = new SetPivotAngleAutomatically( driveToReef, elevatorSubsystem );
   private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef, elevatorSubsystem, setPivotAngleAutomatically, runCoralAlgaeDeviceAutomatic);
+  private final Lights lights = Lights.getInstance();
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -76,6 +78,12 @@ public class RobotContainer
 
     elevatorSubsystem.setDefaultCommand( new RepeatCommand( new InstantCommand( elevatorSubsystem::run, elevatorSubsystem )));
     coralAlgaeDevice.setDefaultCommand( new RepeatCommand( new InstantCommand( coralAlgaeDevice::run, coralAlgaeDevice )));
+
+      lights.setDefaultCommand(
+              new RepeatCommand(
+                      new InstantCommand(lights::run, lights)
+              )
+      );
   }
 
   /**

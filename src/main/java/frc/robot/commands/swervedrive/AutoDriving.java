@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import frc.robot.constants.AutoDrivingConstants;
+import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.subsystems.swervedrive.Vision;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -295,11 +296,12 @@ public class AutoDriving {
         return getDriveToPoseCommand()
                 .until( () -> {
                     SmartDashboard.putString("AutoDriving/CurrentDrivingMode", "DRIVE_PATHPLANNER");
+                    Lights.getInstance().setPattern(Lights.PATTERN.AUTO_DRIVING);
                    Pose2d currentPose = swerve.getPose();
                    Pose2d targetPose = currentDrivePoint.getPoint( currentDrivePointModifier );
                    double distance = currentPose.getTranslation().getDistance( targetPose.getTranslation() );
                    return distance < AutoDrivingConstants.PATHPLANNER_TO_PRECISE_DRIVE_DISTANCE_THRESHOLD;
-                } )
+                } ).finallyDo( () -> Lights.getInstance().setDefaultPattern() )
                 .andThen( getDrivePreciseCommand() );
                 
     }
@@ -353,6 +355,7 @@ public class AutoDriving {
     {
         return Commands.runOnce( () -> {
             SmartDashboard.putString("AutoDriving/CurrentDrivingMode", "DRIVE_PRECISE");
+            Lights.getInstance().setPattern(Lights.PATTERN.AUTO_DRIVING);
 
             // Sets the PID controller's current robot position initially
             Pose2d robotPose = swerve.getPose();
@@ -394,7 +397,8 @@ public class AutoDriving {
             swerve.driveFieldOriented( new ChassisSpeeds( xVelocity + xDriveSpeed, yVelocity + yDriveSpeed, xRotation + rotationSpeed ) );
 
         }, swerve) )
-        .until( () -> isAtTarget );
+        .until( () -> isAtTarget )
+        .finallyDo( () -> Lights.getInstance().setDefaultPattern() );
     }
 
     public void setDesiredPose()

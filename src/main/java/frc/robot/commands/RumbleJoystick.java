@@ -31,6 +31,6 @@ public class RumbleJoystick extends Command {
 
     @Override
     public boolean isFinished() {
-        return count > 50;
+        return count > 10;
     }
 }

@@ -2,6 +2,7 @@ package frc.robot.commands.coralalgae;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CoralAlgaeDevice;
+import frc.robot.subsystems.Lights;
 
 public class IntakeCoral extends Command {
     private CoralAlgaeDevice coralAlgaeDevice = null;
@@ -18,6 +19,7 @@ public class IntakeCoral extends Command {
         super.initialize();
         count = 0;
         hasCoral = false;
+        Lights.getInstance().setPattern( Lights.PATTERN.INTAKE_CORAL );
     }
 
     @Override
@@ -52,5 +54,6 @@ public class IntakeCoral extends Command {
     @Override
     public void end(boolean interrupted) {
         coralAlgaeDevice.stop();
+        Lights.getInstance().setDefaultPattern();
     }
 }

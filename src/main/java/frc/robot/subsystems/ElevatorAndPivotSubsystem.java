@@ -120,6 +120,10 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         config2.idleMode(SparkBaseConfig.IdleMode.kBrake);
         elevatorSparkMax.configure(config2, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
+        SparkMaxConfig config3 = new SparkMaxConfig();
+        config3.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        pivotSparkMax.configure(config3, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+
 
         elevatorPIDController.setGoal( 0 );
         elevatorPIDController.reset(getCurrentElevatorEncoderPosition());
