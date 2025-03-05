@@ -12,7 +12,7 @@ public class MovePivotToDesiredPosition extends Command {
     public MovePivotToDesiredPosition( ElevatorAndPivotSubsystem elevatorAndPivotSubsystem )
     {
         this.elevatorAndPivotSubsystem = elevatorAndPivotSubsystem;
-        addRequirements( elevatorAndPivotSubsystem );
+        //addRequirements( elevatorAndPivotSubsystem );
     }
 
     @Override

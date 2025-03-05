@@ -16,6 +16,6 @@ public class MovePivotAndElevatorToPosition extends SequentialCommandGroup {
                 new RunElevatorToPosition( elevatorAndPivotSubsystem ),
                 new MovePivotToDesiredPosition( elevatorAndPivotSubsystem )
         );
-        addRequirements( elevatorAndPivotSubsystem );
+        //addRequirements( elevatorAndPivotSubsystem );
     }
 }

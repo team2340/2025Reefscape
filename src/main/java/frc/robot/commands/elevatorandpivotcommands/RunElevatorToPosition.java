@@ -9,7 +9,7 @@ public class RunElevatorToPosition extends Command {
 
     public RunElevatorToPosition( ElevatorAndPivotSubsystem elevatorAndPivotSubsystem ) {
         this.elevatorAndPivotSubsystem = elevatorAndPivotSubsystem;
-        addRequirements( elevatorAndPivotSubsystem );
+        //addRequirements( elevatorAndPivotSubsystem );
     }
 
     @Override

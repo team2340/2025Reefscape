@@ -7,18 +7,18 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 
 public class Lights extends SubsystemBase {
-    PWMSparkMax blinken = new PWMSparkMax(0);
+    PWMSparkMax blinken = new PWMSparkMax(9);
 
     private PATTERN currentPattern = PATTERN.DEFAULT;
 
     public enum PATTERN {
-        INTAKE_CORAL(0.77),
-        AUTO_DRIVING(0.65),
-        AUTO_DRIVING_REACHED(-0.63),
-        DEPLOYING_CORAL(0.93),
-        MOVING_ELEVATOR(0.57),
-        DISABLED(0.99),
-        DEFAULT(-0.69);
+        INTAKE_CORAL(0.57),
+        AUTO_DRIVING(0.75),
+        AUTO_DRIVING_REACHED(0.65),
+        DEPLOYING_CORAL(0.91),
+        MOVING_ELEVATOR(0.81),
+        DISABLED(-0.51),
+        DEFAULT(-0.55);
 
         private double pwmValue;
         PATTERN(double values)

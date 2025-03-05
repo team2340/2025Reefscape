@@ -13,7 +13,7 @@ public class MovePivotToSafePosition extends Command {
     public MovePivotToSafePosition( ElevatorAndPivotSubsystem elevatorAndPivotSubsystem )
     {
         this.elevatorAndPivotSubsystem = elevatorAndPivotSubsystem;
-        addRequirements( elevatorAndPivotSubsystem );
+        //addRequirements( elevatorAndPivotSubsystem );
     }
 
     @Override

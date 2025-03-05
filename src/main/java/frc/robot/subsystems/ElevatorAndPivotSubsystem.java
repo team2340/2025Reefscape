@@ -242,6 +242,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
             {
                 elevatorSparkMax.getEncoder().setPosition(-5);
                 stopElevator();
+                elevatorPIDController.reset( getCurrentElevatorEncoderPosition() );
             }
             homed = true;
         }

@@ -11,6 +11,6 @@ public class BringElevatorBackDown extends SequentialCommandGroup {
                 new InstantCommand( () -> elevatorAndPivotSubsystem.setQueuedElevatorPosition( ElevatorAndPivotSubsystem.ElevatorPositions.INTAKE )),
                 new InstantCommand( () -> elevatorAndPivotSubsystem.setQueuedPivotAngle( ElevatorAndPivotSubsystem.PivotAngles.STOWED )),
                 new MovePivotAndElevatorToPosition( elevatorAndPivotSubsystem ) );
-        addRequirements( elevatorAndPivotSubsystem );
+        //addRequirements( elevatorAndPivotSubsystem );
     }
 }
