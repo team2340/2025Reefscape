@@ -27,6 +27,7 @@ import frc.robot.commands.manualjogcommands.JogElevatorUp;
 import frc.robot.commands.manualjogcommands.JogPivotIn;
 import frc.robot.commands.manualjogcommands.JogPivotOut;
 import frc.robot.commands.swervedrive.AutoDriving;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CoralAlgaeDevice;
 import frc.robot.subsystems.ElevatorAndPivotSubsystem;
 import frc.robot.subsystems.Lights;
@@ -56,6 +57,7 @@ public class RobotContainer
   private final ElevatorAndPivotSubsystem elevatorSubsystem = new ElevatorAndPivotSubsystem();
   private final CoralAlgaeDevice coralAlgaeDevice = new CoralAlgaeDevice();
   private final RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic = new RunCoralAlgaeDeviceAutomatic(driveToReef, elevatorSubsystem, coralAlgaeDevice);
+  private final Climber climber = new Climber();
 
   private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
   private final SetPivotAngleAutomatically setPivotAngleAutomatically = new SetPivotAngleAutomatically( driveToReef, elevatorSubsystem );
@@ -109,6 +111,8 @@ public class RobotContainer
     driverXbox.x().whileTrue( new MovePivotAndElevatorToPosition( elevatorSubsystem ).andThen( new RumbleJoystick( driverSwerve ) )  );
     driverXbox.y().whileTrue( new BringElevatorBackDown( elevatorSubsystem ).andThen( new RumbleJoystick( driverSwerve ) )  );
 
+    driverXbox.povUp().whileTrue( climber.climberOutCommand() );
+    driverXbox.povDown().whileTrue( climber.climberInCommand() );
 
     configureStreamDeckBindings();
   }
