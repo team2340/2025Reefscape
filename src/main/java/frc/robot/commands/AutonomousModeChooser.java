@@ -4,7 +4,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import frc.robot.commands.coralalgae.IntakeCoral;
 import frc.robot.commands.coralalgae.RunCoralAlgaeDeviceAutomatic;
 import frc.robot.commands.elevatorandpivotcommands.BringElevatorBackDown;
 import frc.robot.commands.elevatorandpivotcommands.MovePivotAndElevatorToPosition;
@@ -28,14 +30,16 @@ public class AutonomousModeChooser {
     private ElevatorAndPivotSubsystem elevatorAndPivotSubsystem = null;
     private SetPivotAngleAutomatically setPivotAngleAutomatically = null;
     private RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic;
+    private CoralAlgaeDevice coralAlgaeDevice;
 
     private List<SendableChooser<Supplier<Command>>> listOfActions = new ArrayList<>();
-    public AutonomousModeChooser( SwerveSubsystem drivebase, AutoDriving driveToReef, ElevatorAndPivotSubsystem elevatorAndPivotSubsystem, SetPivotAngleAutomatically setPivotAngleAutomatically, RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic ) {
+    public AutonomousModeChooser( SwerveSubsystem drivebase, AutoDriving driveToReef, ElevatorAndPivotSubsystem elevatorAndPivotSubsystem, SetPivotAngleAutomatically setPivotAngleAutomatically, RunCoralAlgaeDeviceAutomatic runCoralAlgaeDeviceAutomatic, CoralAlgaeDevice coralAlgaeDevice ) {
         this.drivebase = drivebase;
         this.driveToReef = driveToReef;
         this.elevatorAndPivotSubsystem = elevatorAndPivotSubsystem;
         this.setPivotAngleAutomatically = setPivotAngleAutomatically;
         this.runCoralAlgaeDeviceAutomatic = runCoralAlgaeDeviceAutomatic;
+        this.coralAlgaeDevice = coralAlgaeDevice;
 
         for( int i = 0; i < 5; i++ ) {
             SendableChooser<Supplier<Command>> chooser = new SendableChooser<>();
@@ -66,7 +70,12 @@ public class AutonomousModeChooser {
                     })
                             .andThen( new MovePivotAndElevatorToPosition( elevatorAndPivotSubsystem ) )
                             .andThen( runCoralAlgaeDeviceAutomatic.getCommand() )
-                            .andThen( new BringElevatorBackDown( elevatorAndPivotSubsystem ) )
+                            //.andThen( new BringElevatorBackDown( elevatorAndPivotSubsystem ) )
+                            .andThen( new InstantCommand(() -> {
+                                elevatorAndPivotSubsystem.setQueuedPivotAngle(ElevatorAndPivotSubsystem.PivotAngles.DEPLOY_CORAL);
+                                elevatorAndPivotSubsystem.setQueuedElevatorPosition(ElevatorAndPivotSubsystem.ElevatorPositions.L3);
+                            }))
+                            .andThen(new MovePivotAndElevatorToPosition(elevatorAndPivotSubsystem))
             );
         }
 
@@ -99,9 +108,19 @@ public class AutonomousModeChooser {
 
     public Command getAutonomousCommand() {
         Command command = new PrintCommand( "Starting Auto" );
+        boolean first = false;
 
         for( SendableChooser<Supplier<Command>> action : listOfActions ) {
-            command = command.andThen( action.getSelected().get() );
+            if( first )
+            {
+                first = false;
+                command.andThen( new ParallelCommandGroup( action.getSelected().get(), new IntakeCoral(coralAlgaeDevice)));
+            }
+            else
+
+            {
+                command = command.andThen( action.getSelected().get() );
+            }
         }
 
         return command;

@@ -61,7 +61,7 @@ public class RobotContainer
 
   private final AprilTagPoseProcessing aprilTagPoseProcessing = new AprilTagPoseProcessing( driveToReef );
   private final SetPivotAngleAutomatically setPivotAngleAutomatically = new SetPivotAngleAutomatically( driveToReef, elevatorSubsystem );
-  private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef, elevatorSubsystem, setPivotAngleAutomatically, runCoralAlgaeDeviceAutomatic);
+  private final AutonomousModeChooser autonomousModeChooser = new AutonomousModeChooser( drivebase, driveToReef, elevatorSubsystem, setPivotAngleAutomatically, runCoralAlgaeDeviceAutomatic, coralAlgaeDevice);
   private final Lights lights = Lights.getInstance();
 
   /**
@@ -212,7 +212,7 @@ public class RobotContainer
     streamDeck.button( 31 ).whileTrue( new JogElevatorUp( elevatorSubsystem ) );
     streamDeck.button( 32 ).whileTrue( new JogElevatorDown( elevatorSubsystem ) );
 
-    streamDeck.button(7).onTrue(new IntakeAlgae(coralAlgaeDevice));
+    streamDeck.button(7).toggleOnTrue(new IntakeAlgae(coralAlgaeDevice));
 
     streamDeck.button(8).onTrue( new DeployAlgae( coralAlgaeDevice) );
 

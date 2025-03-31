@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
-    private final SparkMax climberSparkMax = new SparkMax(255, SparkLowLevel.MotorType.kBrushless);
+    private final SparkMax climberSparkMax = new SparkMax(18, SparkLowLevel.MotorType.kBrushless);
 
     public Climber()
     {
@@ -21,7 +21,7 @@ public class Climber extends SubsystemBase {
     public Command climberInCommand()
     {
         return Commands.startEnd(
-                () -> climberSparkMax.set(1),
+                () -> climberSparkMax.set(-1),
                 () -> climberSparkMax.set(0),
                 this
         );
@@ -30,7 +30,7 @@ public class Climber extends SubsystemBase {
     public Command climberOutCommand()
     {
         return Commands.startEnd(
-                () -> climberSparkMax.set(-1),
+                () -> climberSparkMax.set(1),
                 () -> climberSparkMax.set(0),
                 this
         );

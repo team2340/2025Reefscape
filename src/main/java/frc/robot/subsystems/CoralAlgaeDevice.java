@@ -24,14 +24,15 @@ public class CoralAlgaeDevice extends SubsystemBase {
     {
         SparkMaxConfig config = new SparkMaxConfig();
         config.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        //config.smartCurrentLimit(5);
+
+        config.openLoopRampRate(0.25);
         middleMotor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
         topMotor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
         bottomMotor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
     }
     public void runAlgaeIntake() {
-        middleMotor.set(0.5);
-        topMotor.set(0.5);
+        //middleMotor.set(0.5);
+        topMotor.set(1.0);
     }
 
     public void stop() {
@@ -46,13 +47,17 @@ public class CoralAlgaeDevice extends SubsystemBase {
     }
 
     public void runCoralIntake() {
-        bottomMotor.set(-0.5);
-        middleMotor.set(0.5);
+        bottomMotor.set(-0.2);
+        middleMotor.set(0.2);
+    }
+    public void runCoralIntakeBackwaards() {
+        bottomMotor.set(0.2);
+        middleMotor.set(-0.2);
     }
 
     public void runCoralDeploy() {
-        bottomMotor.set(-1);
-        middleMotor.set(1);
+        bottomMotor.set(-0.9);
+        middleMotor.set(0.85);
     }
 
     public boolean rearSensorHasCoral()
@@ -94,8 +99,8 @@ public class CoralAlgaeDevice extends SubsystemBase {
     }
 
     public void runCoralIntakeBackwards() {
-        bottomMotor.set(0.5);
-        middleMotor.set(-0.5);
+        bottomMotor.set(0.2);
+        middleMotor.set(-0.2);
     }
 
     public void publishReadyChecks() {

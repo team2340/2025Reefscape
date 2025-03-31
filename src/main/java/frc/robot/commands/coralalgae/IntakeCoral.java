@@ -49,7 +49,7 @@ public class IntakeCoral extends Command {
 
     @Override
     public boolean isFinished() {
-        return hasCoral && count > 10;
+        return hasCoral && count > 15;
     }
 
     @Override

@@ -22,7 +22,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
     private DigitalInput bottomLimitSwitch = new DigitalInput(0);
     private DutyCycleEncoder pivotEncoder = new DutyCycleEncoder(1);
 
-    private ElevatorPositions queuedElevatorPosition = ElevatorPositions.L1;
+    private ElevatorPositions queuedElevatorPosition = ElevatorPositions.INTAKE;
     private ElevatorPositions desiredElevatorPosition = ElevatorPositions.INTAKE;
 
     private PivotAngles queuedPivotAngle = PivotAngles.STOWED;
@@ -48,7 +48,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
     }
 
     public enum ElevatorPositions {
-        INTAKE(0, 10),
+        INTAKE(-4, 10),
         L1(20 +5, 10),
         L2(46, 10),
         L3(120, 10),
@@ -73,10 +73,10 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
 
     public enum PivotAngles {
         STOWED( 0.4866 ),
-        DEPLOY_CORAL(.530),
+        DEPLOY_CORAL(.531),
         INTAKE_ALGAE(.630),
         DEPLOY_CORAL_L4(.535),
-        DEPLOY_ALGAE(.728);
+        DEPLOY_ALGAE(.718);
 
         private double encoderPosition;
         PivotAngles(double encoderPosition) {
@@ -126,7 +126,7 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
         pivotSparkMax.configure(config3, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
 
-        elevatorPIDController.setGoal( 0 );
+        elevatorPIDController.setGoal( ElevatorPositions.INTAKE.getEncoderPosition() );
         elevatorPIDController.reset(getCurrentElevatorEncoderPosition());
 
         pivotPIDController.setGoal(PivotAngles.STOWED.getEncoderPosition());
@@ -141,6 +141,11 @@ public class ElevatorAndPivotSubsystem extends SubsystemBase {
 
     public double getCurrentPivotEncoderPosition() {
         return pivotEncoder.get();
+    }
+
+    public PivotAngles getCurrentPivotDesired()
+    {
+        return desiredPivotAngle;
     }
 
     private void movePivotToDesiredAngle() {
